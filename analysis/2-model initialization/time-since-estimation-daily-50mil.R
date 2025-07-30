@@ -30,8 +30,10 @@ booster_doses_1st_by_day <- read.csv("data/clean-data/booster_1st_doses_by_day.c
 booster_doses_2nd_by_day <- read.csv("data/clean-data/booster_2nd_doses_by_day_updated.csv")[,-1]
 fully_vax_doses_by_day <- read.csv("data/clean-data/fully_vax_doses_by_day.csv")[,-1]
 
-#'Time Since Last' Estimation -- Initializing model at December 31, 2021
-#NOTE: Estimation run separately for each age group because of differences in vaccine coverage and seroprevalence
+#'Time Since Last' Estimation -- Initializing model at July 1, 2023.
+#NOTE: The goal is to re-create a hypothetical cohort that demographically matches the United States, and whose population's immune history
+#      matches the immune history seen in the United States in July 1, 2023. Estimation run separately for each age group because of differences
+#      in vaccine coverage and seroprevalence
 
 #Clean data
 booster_doses_1st_by_day$day <- as.character(booster_doses_1st_by_day$day)
@@ -60,8 +62,8 @@ time_since_last <- function(df) {
   
   reinf_only <- last_dose_and_inf %>% filter(prior_inf == 'reinf')
   
-  #system.time({
-  # Return a data frame
+  #For individuals who are assigned an immunity status of "re-infected", simulated an additional time-since between time of first infection and July 1, 2023.
+  #Doing this in parallel to speed things up.
   reinf_estimation <- rbind(foreach (i=1:(floor(nrow(reinf_only)/10000) - 1), .combine=rbind) %dopar% {
     
     reinf_only[(1 + (10000 * (i-1))):(10000 * i),] %>%
@@ -146,10 +148,13 @@ age_75plus_cal <- as.data.frame(lapply(age_75plus_specs[,1:2], rep, age_75plus_s
          risk_group = sample(c('healthy', 'immunocompromised', 'higher risk'), (50000000*0.073), prob = c(0.124, 0.1065, 0.7695), replace = TRUE))
 
 
+#Run time-since function on each age group's df
 set.seed(88)
 time_since_results <- list(age_0_17_cal, age_18_29_cal, age_30_49_cal, age_50_64_cal, age_65_74_cal, age_75plus_cal) %>%
   lapply(time_since_last)
 
+
+#Inspect
 inspection <- time_since_results[[5]] 
 
 
@@ -157,10 +162,10 @@ inspection <- time_since_results[[5]]
 #combine the age groups into one dataframe
 combined <- bind_rows(time_since_results) 
 
-
+#Save population as csv file
 write.csv(combined, "data/clean-data/entire_population_model_initialization_daily_50mil_updated.csv")
 ############################################################
-#PLOTS
+#PLOTS OF TIME-SINCE EVENT DISTRIBUTION FOR ENTIRE SIMULATED POPULATION
 
 pdf("time-since-plots-50mil.pdf")
 

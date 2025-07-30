@@ -1,5 +1,5 @@
 ###################################################################################################
-#Title: 'Time Since Last' Estimation
+#Title: 'Time Since Last' Estimation (1 million population)
 #Author: Hailey Park
 #Date: June 19, 2024
 ###################################################################################################
@@ -30,8 +30,10 @@ booster_doses_1st_by_day <- read.csv("data/clean-data/booster_1st_doses_by_day.c
 booster_doses_2nd_by_day <- read.csv("data/clean-data/booster_2nd_doses_by_day_updated.csv")[,-1]
 fully_vax_doses_by_day <- read.csv("data/clean-data/fully_vax_doses_by_day.csv")[,-1]
 
-#'Time Since Last' Estimation -- Initializing model at December 31, 2021
-#NOTE: Estimation run separately for each age group because of differences in vaccine coverage and seroprevalence
+#'Time Since Last' Estimation -- Initializing model at July 1, 2023.
+#NOTE: The goal is to re-create a hypothetical cohort that demographically matches the United States, and whose population's immune history
+#      matches the immune history seen in the United States in July 1, 2023. Estimation run separately for each age group because of differences
+#      in vaccine coverage and seroprevalence
 
 #Clean data
 booster_doses_1st_by_day$day <- as.character(booster_doses_1st_by_day$day)
@@ -60,8 +62,8 @@ time_since_last <- function(df) {
   
   reinf_only <- last_dose_and_inf %>% filter(prior_inf == 'reinf')
   
-#system.time({
-  # Return a data frame
+  #For individuals who are assigned an immunity status of "re-infected", simulated an additional time-since between time of first infection and July 1, 2023.
+  #Doing this in parallel to speed things up.
   reinf_estimation <- rbind(foreach (i=1:(floor(nrow(reinf_only)/10000) - 1), .combine=rbind) %dopar% {
     
     reinf_only[(1 + (10000 * (i-1))):(10000 * i),] %>%
@@ -83,6 +85,12 @@ time_since_last <- function(df) {
 }
 
 #Create matrices for each age group
+# NOTE: 1. Demographic proportions for each age group by risk group (healthy, immunocompromised, higher risk) are from the "risk_group_prevalence_estimates_1+comorbidity.csv" file
+#       and compiled from data from US Census, NHANES, MarketScan, etc. (refer to table doc made by Sam)
+#       2. Proportions of each immunity status (vaccinated, infected) by age group are from "model initialization - immunity mapping estimates.docx" file
+#       in the "data/processed-data" folder. The document contains information on data source and estimation.
+#       3. Both the demographic characteristic and immunity profile are independently and randomly assigned. 
+#       4. Proportions may differ slightly (by 0.001%) between the 1mil and 50mil population scripts due to rounding issues.
 
 set.seed(88)
 age_0_17_specs <- data.frame(prior_vacc=c("unvax","unvax","fullvax", "fullvax", "boosted_1st", "boosted_2nd", "boosted_1st", "boosted_2nd", "boosted_1st", "boosted_2nd", "fullvax"), 
@@ -146,21 +154,23 @@ age_75plus_cal <- as.data.frame(lapply(age_75plus_specs[,1:2], rep, age_75plus_s
          risk_group = sample(c('healthy', 'immunocompromised', 'higher risk'), (1000000*0.073), prob = c(0.124, 0.1065, 0.7695), replace = TRUE))
 
 
+#Run time-since function on each age group's df
 set.seed(88)
 time_since_results <- list(age_0_17_cal, age_18_29_cal, age_30_49_cal, age_50_64_cal, age_65_74_cal, age_75plus_cal) %>%
   lapply(time_since_last)
 
-inspection <- time_since_results[[5]] 
 
+#Inspect
+inspection <- time_since_results[[5]] 
 
 
 #combine the age groups into one dataframe
 combined <- bind_rows(time_since_results) 
 
-
+#Save population as csv file
 write.csv(combined, "data/clean-data/entire_population_model_initialization_daily_1mil_updated.csv")
 ############################################################
-#PLOTS
+#PLOTS OF TIME-SINCE EVENT DISTRIBUTION FOR ENTIRE SIMULATED POPULATION
 
 pdf("time-since-plots-1mil.pdf")
 
