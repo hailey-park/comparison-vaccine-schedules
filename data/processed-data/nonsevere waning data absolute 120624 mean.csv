@@ -1,0 +1,13 @@
+Outcome,Vaccine Status,Age,Prior Infection,Month0.5,Month1,Month2,Month3,Month4,Month5,Month6,Month7,Month8,Month9,Month10,Month11,Month12,References
+Nonsevere Outcomes,Unvaccinated,18-49 years,Yes,,,,65.2,60.7,56.1,51.2,46.5,41.5,37,32.3,28.6,24.7,"Bobrovitz et al (Lancet, 2023)"
+Nonsevere Outcomes,Unvaccinated,50-64 years,Yes,,,,65.2,60.7,56.1,51.2,46.5,41.5,37,32.3,28.6,24.7,"Bobrovitz et al (Lancet, 2023)"
+Nonsevere Outcomes,Unvaccinated,65+ years,Yes,,,,65.2,60.7,56.1,51.2,46.5,41.5,37,32.3,28.6,24.7,"Bobrovitz et al (Lancet, 2023)"
+Nonsevere Outcomes,Boosted,18-49 years,Yes,84.4,80.1,74.8,68.6,61.6,54.1,46.5,,,,,,,"Bobrovitz et al (Lancet, 2023)"
+Nonsevere Outcomes,Boosted,18-49 years,No,65.4,58.2,50.9,43.4,36.4,29.8,24.2,18.9,14.9,,,,,"Bobrovitz et al (Lancet, 2023)"
+Nonsevere Outcomes,Boosted,18-49 years,No,51.83193277,42.32225755,35.0358396,28.88511364,24.60288248,20.74769404,17.25105634,27.16941112,,,,,,"Lau et al. (Nature Medicine, 2023)"
+Nonsevere Outcomes,Boosted,50-64 years,Yes,84.4,80.1,74.8,68.6,61.6,54.1,46.5,,,,,,,"Bobrovitz et al (Lancet, 2023)"
+Nonsevere Outcomes,Boosted,50-64 years,No,65.4,58.2,50.9,43.4,36.4,29.8,24.2,18.9,14.9,,,,,"Bobrovitz et al (Lancet, 2023)"
+Nonsevere Outcomes,Boosted,50-64 years,No,51.83193277,42.32225755,35.0358396,28.88511364,24.60288248,20.74769404,17.25105634,27.16941112,,,,,,"Lau et al. (Nature Medicine, 2023)"
+Nonsevere Outcomes,Boosted,65+ years,Yes,84.4,80.1,74.8,68.6,61.6,54.1,46.5,,,,,,,"Bobrovitz et al (Lancet, 2023)"
+Nonsevere Outcomes,Boosted,65+ years,No,65.4,58.2,50.9,43.4,36.4,29.8,24.2,18.9,14.9,,,,,"Bobrovitz et al (Lancet, 2023)"
+Nonsevere Outcomes,Boosted,65+ years,No,51.83193277,42.32225755,35.0358396,28.88511364,24.60288248,20.74769404,17.25105634,27.16941112,,,,,,"Lau et al. (Nature Medicine, 2023)"
