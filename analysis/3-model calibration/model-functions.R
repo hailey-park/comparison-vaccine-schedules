@@ -148,7 +148,7 @@ boosterSimulation <- function(df, params){
   vaccine_wave <- input$vaccine_wave
   second_vaccine_wave <- input$second_vaccine_wave
   #distribute booster uptake the last 182 days, according to age distributions
-  vaccine_wave_val <- input$vaccine_wave_val
+  third_vaccine_wave <- input$third_vaccine_wave
   
     
   #Assign age-specific lambda to each individual
@@ -203,8 +203,8 @@ boosterSimulation <- function(df, params){
     
     #Staggering updated booster vaccination during model validation period over last 182 days
     if(i %in% c((1 + 365):(365 + 182))){
-      vaccine_wave_index_validation <- which(vaccine_wave_val == i)
-      time_since_last[vaccine_wave_index_validation] <- 1
+      vaccine_wave_3_index <- which(third_vaccine_wave == i)
+      time_since_last[vaccine_wave_3_index] <- 1
     }
     
 
@@ -358,7 +358,7 @@ boosterSimulation <- function(df, params){
                                                                                        total_nonsevere = sum(nonsevere_day1))
     
     grouped_outcome_counts[, i + 3] <- grouped_outcomes$total_severe
-    grouped_outcome_counts[, i + 550] <- grouped_outcomes$total_nonsevere
+    grouped_outcome_counts[, i + (3+547)] <- grouped_outcomes$total_nonsevere
     
   }
   

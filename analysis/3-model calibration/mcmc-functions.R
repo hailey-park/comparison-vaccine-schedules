@@ -116,8 +116,8 @@ proposalfunction <- function(param){
   lambda_17 = min(max(rnorm(1, mean=param[17], sd=0.0005), 0.98), 1.01)
   lambda_18 = min(max(rnorm(1, mean=param[18], sd=0.0005), 0.98), 1.01)
   
-  baseline_case_hosp_frac = param[19]
-  time_since = param[20]
+  baseline_case_hosp_frac = min(max(rnorm(1, mean=param[19], sd=param[19] * 0.1), 0.001), 0.05)
+  time_since = min(max(rnorm(1, mean=param[20], sd=1), -10), 10)
   
   return(c(lambda_1, lambda_2, lambda_3, lambda_4, lambda_5, lambda_6, lambda_7, 
            lambda_8, lambda_9, lambda_10, lambda_11, lambda_12, lambda_13,
