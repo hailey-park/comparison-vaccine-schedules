@@ -16,7 +16,7 @@ prediction <- function (params) {
   
   #Run model
   set.seed(88)
-  results <- boosterSimulation(clean_df[[1]], c(params, lambdas)) 
+  results <- historicalVaccinationSimulation(clean_df[[1]], c(params, lambdas)) 
   
   #Reformat results into weekly incidence estimates by age group (separate columns)
   reformatted_results <- melt(setDT(results %>% group_by(age_group) %>% summarise(across(total_pop:day547, sum))), id = c("age_group", "total_pop"))  %>%

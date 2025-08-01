@@ -67,10 +67,12 @@ clean_df <- list(entire_pop_with_vax_assigned) %>%
   lapply(clean_population_df) 
 
 ############################################################################################
-#calculate multiplier adjustments (this accounts for the difference in magnitude between severe and nonsevere protection, by risk group)
+#This function estimates the protection (both severe and nonsevere) of the population at model initialization (July 1, 2023).
 protection_at_model_initialization <- function(df){
+  
+  #Merge waning protection estimates with population
   with_protection <- merge((df %>% rowwise() %>%
-                             mutate(weeks_since_last_dose_inf = min(max(1, weeks_since_last_dose_inf), 730))), waning_data_clean, by.x = c("immuno","weeks_since_last_dose_inf"), 
+                             mutate(weeks_since_last_dose_inf = min(max(1, weeks_since_last_dose_inf), 104))), waning_data_clean, by.x = c("immuno","weeks_since_last_dose_inf"), 
                            by.y = c("immuno", "weeks"), all.x = TRUE) %>% arrange(individual)
   
   #Individuals who are unvaccinated and no prior infection history has no protection
@@ -93,6 +95,7 @@ protection_at_model_initialization <- function(df){
   hybrid_index <- which(with_protection$prior_vacc !="unvax" & with_protection$prior_inf != "noinf")
   with_protection[hybrid_index, c("severe_ve_pred", "nonsevere_ve_pred")] <- with_protection[hybrid_index, c("severe_hybrid_ve", "nonsevere_hybrid_ve")]
   
+  #calculate multiplier adjustments (this accounts for the difference in magnitude between severe and nonsevere protection, by risk group)
   group_multiplier_adj <- with_protection %>% group_by(age_group, risk_group) %>% dplyr::summarise(mean_severe_ve = mean(severe_ve_pred),
                                                                                                    mean_nonsevere_ve = mean(nonsevere_ve_pred)) %>%
     dplyr::mutate(multiplier_adj = (1-mean_severe_ve)/(1-mean_nonsevere_ve))
@@ -102,21 +105,23 @@ protection_at_model_initialization <- function(df){
                                                                                     mean_nonsevere_ve = mean(nonsevere_ve_pred)) 
   
   return(list(group_multiplier_adj %>% dplyr::select(age_group, risk_group, mean_nonsevere_ve, mean_severe_ve, multiplier_adj),
-              age_group_multiplier_adj %>% dplyr::select(age_group, mean_nonsevere_ve, mean_severe_ve),
               with_protection$severe_ve_pred,
-              with_protection$nonsevere_ve_pred,
-              group_multiplier_adj %>% dplyr::select(age_group, risk_group, mean_nonsevere_ve, mean_severe_ve)))
+              with_protection$nonsevere_ve_pred))
 }
 
+#Run function to generate protection estimates for the population at model initialization
 protection_at_model_init <- protection_at_model_initialization(clean_df[[1]]) 
+
+#Multiplier adjustments (first output from function)
 mult_adj <- protection_at_model_init[[1]]
 
-
+#Severe infection multipliers
+# NOTE: These severe infection multiplier are applied to the nonsevere-risk model equations to generate severe risk. These multiplier are just the ratio
+#       of severe to nonsevere incidence by age group at model initialization.
 severe_infection_multipliers <- setDT(merge(merge(average_severe_incidence, average_nonsevere_incidence, by = c("age_group", "risk_group"), all.x = TRUE) %>% 
                                               mutate(multiplier = severe_inc/nonsevere_inc),
                                                   mult_adj, by = c("age_group", "risk_group"), all.x = TRUE) %>%
   mutate(multiplier = if_else(age_group == "0-17 years", 0, multiplier)))
-
 setkeyv(severe_infection_multipliers, c("age_group", "risk_group"))
 ############################################################################################
 #Beta calculation: We have 3 age-specific lambdas (0-17 years, 18-64 years, 65+ years). For the 18-64 year and 65+ year
@@ -124,7 +129,7 @@ setkeyv(severe_infection_multipliers, c("age_group", "risk_group"))
 # stratified age groups. We are assuming that the 18-64 yr lambda has the 18-29 year age group as baseline, and the 65+ yr
 # lambda has the 65-74 year age group as baseline. Beta is fixed. We are using the average nonsevere incidence and average 
 # (1-PE) estimates by age group at t = 0 to calculate beta.
-beta_calc <- merge(protection_at_model_init[[5]], average_nonsevere_incidence, by = c("age_group", "risk_group"), all.x = TRUE) 
+beta_calc <- merge(protection_at_model_init[[1]] %>% dplyr::select(-multiplier_adj), average_nonsevere_incidence, by = c("age_group", "risk_group"), all.x = TRUE) 
 
 beta_0_17 <- beta_calc %>% filter(age_group == "0-17 years") %>%
   mutate(pe_adj = (1 - mean_nonsevere_ve[1])/(1 - mean_nonsevere_ve),
@@ -146,6 +151,7 @@ beta <- setDT(rbind(beta_0_17, beta_18_64, beta_65_plus))
 setkeyv(beta, c("age_group", "risk_group"))
 
 
+#This function sets the age-specific lambdas
 set_age_lambdas <- function() {
   
   total_inf <- sum(inf_by_age$total_inf) 

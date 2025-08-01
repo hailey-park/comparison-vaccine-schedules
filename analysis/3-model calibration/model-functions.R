@@ -4,14 +4,13 @@
 #Date: February 5th, 2024
 ########################################################################################################################
 
-#Function for outcome occurrence based on risk (Risk = Lambda* (1 - PE))
-
+#Function for outcome occurrence based on individual-level risk (Risk = Lambda * (1 - PE))
 outcome_occurrence <- function(age, inf, day, risk, immuno, vacc, perfect_immunity_counter, inf_tracker_df, contact_matrix_adj_factors, lambda, betas, severe_mult, prior_protection_severe, prior_protection_nonsevere, prior_time_since, individual) {
   
   severe_pe <- prior_protection_severe
   nonsevere_pe <- prior_protection_nonsevere
   
-  #Calculate the age contact matrix terms for all individuals (dynamic term) -- if no running infections, return no risk
+  #Calculate the age contact matrix terms for all individuals (dynamic term) -- if no circulating infections, return no risk (optimizing function)
   contact_matrix_term_by_age <- data.table(age_group = c("0-17 years","18-29 years", "30-49 years", "50-64 years", "65-74 years", "75+ years"),
                                            contact_matrix_term = c(sum(colSums(inf_tracker_df[4:8,-1])/inf_by_age$total_pop * contact_matrix$X0.17.years),
                                                                    sum(colSums(inf_tracker_df[4:8,-1])/inf_by_age$total_pop * contact_matrix$X18.29.years),
@@ -24,13 +23,14 @@ outcome_occurrence <- function(age, inf, day, risk, immuno, vacc, perfect_immuni
     return(list(rep(0, length(age)), rep(0, length(age)), rep(0, length(age)), rep(0, length(age))))
   }
   
+  #Assign contact matrix term to each individual
   daily_contact_matrix_term <- ((data.table(individual = individual, age_group = age)[contact_matrix_term_by_age, 
                                                             on=c("age_group"), 
-                                                            nomatch = NULL]) %>%
-    arrange(individual))$contact_matrix_term
+                                                            nomatch = NULL]) %>% arrange(individual))$contact_matrix_term
   
-  
-  #Creating a df of individuals eligible for infection to merge with waning_data_clean to get protection at specific time point
+  #Creating a dataframe of individuals eligible for infection to merge with waning_data_clean to get protection at specific time point
+  # NOTE: Eligible individuals are those who do not active perfect immunity, and who's prior time-since is different from current time-since
+  #       under the function (ceiling(X/14))
   index_individuals_eligible <- which(perfect_immunity_counter == 0 & (ceiling((prior_time_since)/14) != ceiling(day/14)))
   df_individuals_eligible <- data.table(index_individual = index_individuals_eligible,
                                         age_group = age[index_individuals_eligible],
@@ -41,18 +41,13 @@ outcome_occurrence <- function(age, inf, day, risk, immuno, vacc, perfect_immuni
                                         days = day[index_individuals_eligible],
                                         weeks = pmin(ceiling(day[index_individuals_eligible]/14), 52), #converting day into week
                                         key = c("immuno", "weeks", "prior_inf", "prior_vacc"))[order(index_individual,decreasing=FALSE),]
-
-  #print(nrow(df_individuals_eligible))
   
-  
-  #For individuals whose time-since are within same week as prior time-since, no need to update waning estimate
+  #For individuals whose time-since are within same bi-week as prior time-since, no need to update waning estimate
   index_individuals_no_updated_waning <- which(perfect_immunity_counter == 0 & (ceiling((prior_time_since)/14) == ceiling(day/14)))
   severe_pe[index_individuals_no_updated_waning] <- prior_protection_severe[index_individuals_no_updated_waning]
   nonsevere_pe[index_individuals_no_updated_waning] <- prior_protection_nonsevere[index_individuals_no_updated_waning]
 
-  #print(length(index_individuals_no_updated_waning))
-
-  #For individuals who time-since are not within the same week as prior time-since, update waning estimate
+  #For individuals who time-since are not within the same bi-week as prior time-since, update waning estimate
   df_individuals_eligible <- merge(df_individuals_eligible, waning_data_clean_alt, all.x = TRUE)
   setkeyv(df_individuals_eligible, c("age_group", "risk_group"))
 
@@ -64,8 +59,6 @@ outcome_occurrence <- function(age, inf, day, risk, immuno, vacc, perfect_immuni
   df_individuals_eligible[immune_naive_index, c("severe_ve", "nonsevere_ve")] <- 0
 
   #Calculate protection (severe + nonsevere) for individuals eligible for infection and updating waning
-  # severe_pe[index_individuals_eligible] <- df_individuals_eligible$severe_ve
-  # nonsevere_pe[index_individuals_eligible] <- df_individuals_eligible$nonsevere_ve
   severe_pe[df_individuals_eligible$index_individual] <- df_individuals_eligible$severe_ve
   nonsevere_pe[df_individuals_eligible$index_individual] <- df_individuals_eligible$nonsevere_ve
 
@@ -77,8 +70,6 @@ outcome_occurrence <- function(age, inf, day, risk, immuno, vacc, perfect_immuni
   nonsevere_risk <- lambda * betas * (1 - nonsevere_pe) * contact_matrix_adj_factors * (daily_contact_matrix_term)
   severe_risk <- lambda * betas * (1 - severe_pe)  *  contact_matrix_adj_factors * (daily_contact_matrix_term) * severe_mult
   
-  #print(inf_tracker_df)
-
   #if nonsevere or severe risk > 1, set to 1
   nonsevere_risk[nonsevere_risk > 1] <- 1
   severe_risk[severe_risk > 1] <- 1
@@ -86,13 +77,15 @@ outcome_occurrence <- function(age, inf, day, risk, immuno, vacc, perfect_immuni
   #Simulate outcomes
   severe_outcomes <- rbinom(length(severe_risk), 1, severe_risk)
   nonsevere_outcomes <- rbinom(length(nonsevere_risk), 1, nonsevere_risk)
+  
   return(list(severe_outcomes, nonsevere_outcomes, severe_pe, nonsevere_pe))
 }
 ########################################################################################################################
 #This is the one year booster simulation, July 2023-July 2024
 
-boosterSimulation <- function(df, params){
+historicalVaccinationSimulation <- function(df, params){
   
+  #Set lambda values from `params` vector
   lambda_1 <- params[1]
   lambda_2 <- params[2]
   lambda_3 <- params[3]
@@ -117,17 +110,20 @@ boosterSimulation <- function(df, params){
   lambda_18_64 <- params[22]
   lambda_65_plus <- params[23]
   
-  #Store severe and nonsevere outcome counts in df (365 days since it is year-long simulation)
+  #Store severe and nonsevere outcome counts in grouped dataframe, stratified by age and risk group 
+  # NOTE: The dataframe is wide because it is storing outcome counts for severe and non-severe infections separately across 547 days (18-month simulation)
   grouped_outcome_counts <- df  %>% group_by(age_group, risk_group) %>% summarise(total_pop = n())
   grouped_outcome_counts[sprintf("day%s",(1:547))] <- NA
   grouped_outcome_counts[sprintf("nonsevere_day%s",(1:547))] <- NA
   
   #Input data (entire pop)
   input <- df %>% arrange(individual)
-  input[sprintf("day%s",(1))] <- NA
-  input[sprintf("nonsevere_day%s",(1))] <- NA
   
-  #Population's info (age_group, num_doses, prior_inf, etc.) at each timestep
+  #Set empty columns to populate for severe/nonsevere outcomes
+  input$day1 <- NA
+  input$nonsevere_day1 <- NA
+  
+  #Population's info (age_group, num_doses, prior_inf, etc.)
   individual <- input$individual
   age <- as.character(input$age_group)
   risk <- as.character(input$risk_group)
@@ -139,15 +135,18 @@ boosterSimulation <- function(df, params){
   
   #If infection occurs, counting down perfect immunity (90 days)
   perfect_immunity_counter <- rep(0,nrow(input))
-  index_recent_infection <- which(inf != "noinf" & time_since_last < 90 & ((time_since_last < time_since_last_dose) | (is.na(time_since_last_dose)))) #Individuals infected in 3 months preceding start of sim have perfect immunity at start
+  
+  #Individuals infected in 3 months preceding start of sim have perfect immunity at start
+  index_recent_infection <- which(inf != "noinf" & time_since_last < 90 & ((time_since_last < time_since_last_dose) | (is.na(time_since_last_dose)))) 
   perfect_immunity_counter[index_recent_infection] <- 91 - time_since_last[index_recent_infection] 
   
+  #Set daily age-specific infection trackers to values from model initialization
   daily_infection_by_age <- inf_by_age$total_inf
   inf_tracker_df <- infection_tracker_df
   
+  #Set vectors for vaccine waves
   vaccine_wave <- input$vaccine_wave
   second_vaccine_wave <- input$second_vaccine_wave
-  #distribute booster uptake the last 182 days, according to age distributions
   third_vaccine_wave <- input$third_vaccine_wave
   
     
@@ -176,13 +175,13 @@ boosterSimulation <- function(df, params){
                                                             on=c("age_group"), 
                                                             nomatch = NULL]) %>% arrange(individual))$contact_matrix_adj
   
-  
-  #Storing prior time-since and protection (this is for optimizing runtime)
+  #Creating vector to storing prior time-since and protection, and setting it to values at model initialization
+  # NOTE: We do this to optimize runtime by updating individual's immunity every 14 days instead of every day.
   prior_time_since <- time_since_last - 1
   prior_time_since[prior_time_since >= 730] <- 730     #Assuming that >24 month waning is same as 24 month waning pe
   prior_time_since[prior_time_since < 0] <- 0
-  prior_protection_severe <- protection_at_model_init[[3]] 
-  prior_protection_nonsevere <- protection_at_model_init[[4]] 
+  prior_protection_severe <- protection_at_model_init[[2]] 
+  prior_protection_nonsevere <- protection_at_model_init[[3]] 
   
     #Iterate through each time step
   for (i in (1:547)) {
@@ -207,7 +206,6 @@ boosterSimulation <- function(df, params){
       time_since_last[vaccine_wave_3_index] <- 1
     }
     
-
     #Modify lambdas based on month
     #Lambda Multiplier 1: (July 1, 2023 - July 31, 2023)
     if(i %in% c(1:31)) {
@@ -350,10 +348,11 @@ boosterSimulation <- function(df, params){
     inf_tracker_df <- rbind(c(1, daily_infection_by_age), inf_tracker_df)
     inf_tracker_df$days_since <- c(1:8)
     
-    #Add data to dataframe
+    #Add individual-level outcome data to dataframe
     input$day1 <- severe_outcomes
     input$nonsevere_day1 <- nonsevere_outcomes
   
+    #Group infection outcomes from the day and store in grouped outcome table
     grouped_outcomes <- input %>% group_by(age_group, risk_group) %>% summarise(total_severe = sum(day1),
                                                                                        total_nonsevere = sum(nonsevere_day1))
     
