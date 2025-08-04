@@ -136,8 +136,10 @@ adj_severe_inc_clean <- combined_inc_with_char %>%
   dplyr::select(age_group, week, weeks_since, inc, adj_inc, healthy_inc, immunocompromised_inc, higher_risk_inc)
 
 
-#write.csv(adj_severe_inc_clean %>% dplyr::select(week, weeks_since, age_group, adj_inc, healthy_inc, immunocompromised_inc, higher_risk_inc), "data/clean-data/weekly-incidence-estimates-US-validationPeriod.csv")
+#Save age-specific severe COVID-19 incidence data
+write.csv(adj_severe_inc_clean %>% dplyr::select(week, weeks_since, age_group, adj_inc, healthy_inc, immunocompromised_inc, higher_risk_inc), "data/clean-data/weekly-incidence-estimates-US-validationPeriod.csv")
 
+#Plot
 plot_data <- melt(adj_severe_inc_clean, id = c("age_group", "week", "weeks_since"))
 
 
@@ -156,6 +158,7 @@ plot_data %>%
   ggtitle("Weekly Incidence of COVID Hospitalizations in US\nData: COVID-NET\nRisk Group: Healthy")
 
 ###################################################################################################
+#This is for getting overall US population's incidence over the July 2023-January 2025 period.
 actual_prevalence = entire_pop %>% group_by(age_group, risk_group) %>% summarise(prevalence = n()/10000000)
 
 observed_severe_inc <- adj_severe_inc_clean %>% mutate(age_group = case_when(age_group == "≥75 years" ~ "75+ years",
@@ -216,9 +219,9 @@ combined <- rbind(overall_pop_inc, adj_severe_inc_clean)
 
 ggplot(data = combined, aes(x = as.Date(week), y = overall_inc, color = type)) + geom_line() +
   ylim(0, 8) + ylab("Weekly Severe Incidence (per 100,000)") +
-  xlab("Time") + xlim(as.Date("2023-07-01"), as.Date("2024-07-01")) +
+  xlab("Time") + xlim(as.Date("2023-07-01"), as.Date("2024\-07-01")) +
   ggtitle("How Simulated Population Distribution Affects Overall Severe Incidence Estimate")
 
 
 
-covid_net_overall <- read.csv("data/clean-data/weekly-incidence-estimates-US-overall.csv")[,-1]
+covid_net_overall <- read.csv("data/clean-data/weekly-incidence-estimates-US-validationPeriod.csv")[,-1]

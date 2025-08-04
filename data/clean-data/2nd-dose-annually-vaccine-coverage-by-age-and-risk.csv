@@ -1,0 +1,325 @@
+"","week","age_group","risk_group","coverage","prop_up_to_date_sim_period"
+"1",35,"0-17 years","healthy",0,NA
+"2",36,"0-17 years","healthy",0,NA
+"3",37,"0-17 years","healthy",0,NA
+"4",38,"0-17 years","healthy",0,NA
+"5",39,"0-17 years","healthy",0,NA
+"6",40,"0-17 years","healthy",0,NA
+"7",41,"0-17 years","healthy",0,NA
+"8",42,"0-17 years","healthy",0,NA
+"9",43,"0-17 years","healthy",0,NA
+"10",44,"0-17 years","healthy",0,NA
+"11",45,"0-17 years","healthy",0,NA
+"12",46,"0-17 years","healthy",0,NA
+"13",47,"0-17 years","healthy",0,NA
+"14",48,"0-17 years","healthy",0,NA
+"15",49,"0-17 years","healthy",0,NA
+"16",50,"0-17 years","healthy",0,NA
+"17",51,"0-17 years","healthy",0,NA
+"18",52,"0-17 years","healthy",0,NA
+"19",35,"18-29 years","healthy",0,NA
+"20",36,"18-29 years","healthy",0,NA
+"21",37,"18-29 years","healthy",0,NA
+"22",38,"18-29 years","healthy",0,NA
+"23",39,"18-29 years","healthy",0,NA
+"24",40,"18-29 years","healthy",0,NA
+"25",41,"18-29 years","healthy",0,NA
+"26",42,"18-29 years","healthy",0,NA
+"27",43,"18-29 years","healthy",0,NA
+"28",44,"18-29 years","healthy",0,NA
+"29",45,"18-29 years","healthy",0,NA
+"30",46,"18-29 years","healthy",0,NA
+"31",47,"18-29 years","healthy",0,NA
+"32",48,"18-29 years","healthy",0,NA
+"33",49,"18-29 years","healthy",0,NA
+"34",50,"18-29 years","healthy",0,NA
+"35",51,"18-29 years","healthy",0,NA
+"36",52,"18-29 years","healthy",0,NA
+"37",35,"30-49 years","healthy",0,NA
+"38",36,"30-49 years","healthy",0,NA
+"39",37,"30-49 years","healthy",0,NA
+"40",38,"30-49 years","healthy",0,NA
+"41",39,"30-49 years","healthy",0,NA
+"42",40,"30-49 years","healthy",0,NA
+"43",41,"30-49 years","healthy",0,NA
+"44",42,"30-49 years","healthy",0,NA
+"45",43,"30-49 years","healthy",0,NA
+"46",44,"30-49 years","healthy",0,NA
+"47",45,"30-49 years","healthy",0,NA
+"48",46,"30-49 years","healthy",0,NA
+"49",47,"30-49 years","healthy",0,NA
+"50",48,"30-49 years","healthy",0,NA
+"51",49,"30-49 years","healthy",0,NA
+"52",50,"30-49 years","healthy",0,NA
+"53",51,"30-49 years","healthy",0,NA
+"54",52,"30-49 years","healthy",0,NA
+"55",35,"50-64 years","healthy",0,NA
+"56",36,"50-64 years","healthy",0,NA
+"57",37,"50-64 years","healthy",0,NA
+"58",38,"50-64 years","healthy",0,NA
+"59",39,"50-64 years","healthy",0,NA
+"60",40,"50-64 years","healthy",0,NA
+"61",41,"50-64 years","healthy",0,NA
+"62",42,"50-64 years","healthy",0,NA
+"63",43,"50-64 years","healthy",0,NA
+"64",44,"50-64 years","healthy",0,NA
+"65",45,"50-64 years","healthy",0,NA
+"66",46,"50-64 years","healthy",0,NA
+"67",47,"50-64 years","healthy",0,NA
+"68",48,"50-64 years","healthy",0,NA
+"69",49,"50-64 years","healthy",0,NA
+"70",50,"50-64 years","healthy",0,NA
+"71",51,"50-64 years","healthy",0,NA
+"72",52,"50-64 years","healthy",0,NA
+"73",35,"65-74 years","healthy",0.95,0.106741573033708
+"74",36,"65-74 years","healthy",1.9,0.106741573033708
+"75",37,"65-74 years","healthy",2.85,0.106741573033708
+"76",38,"65-74 years","healthy",3.8,0.106741573033708
+"77",39,"65-74 years","healthy",4.18,0.0426966292134831
+"78",40,"65-74 years","healthy",4.56,0.0426966292134831
+"79",41,"65-74 years","healthy",4.94,0.0426966292134831
+"80",42,"65-74 years","healthy",5.32,0.0426966292134832
+"81",43,"65-74 years","healthy",5.7,0.0426966292134831
+"82",44,"65-74 years","healthy",6.1,0.044943820224719
+"83",45,"65-74 years","healthy",6.5,0.0449438202247191
+"84",46,"65-74 years","healthy",6.9,0.0449438202247191
+"85",47,"65-74 years","healthy",7.3,0.044943820224719
+"86",48,"65-74 years","healthy",7.62,0.0359550561797753
+"87",49,"65-74 years","healthy",7.94,0.0359550561797753
+"88",50,"65-74 years","healthy",8.26,0.0359550561797752
+"89",51,"65-74 years","healthy",8.58,0.0359550561797753
+"90",52,"65-74 years","healthy",8.9,0.0359550561797753
+"91",35,"75+ years","healthy",0.95,0.106741573033708
+"92",36,"75+ years","healthy",1.9,0.106741573033708
+"93",37,"75+ years","healthy",2.85,0.106741573033708
+"94",38,"75+ years","healthy",3.8,0.106741573033708
+"95",39,"75+ years","healthy",4.18,0.0426966292134831
+"96",40,"75+ years","healthy",4.56,0.0426966292134831
+"97",41,"75+ years","healthy",4.94,0.0426966292134831
+"98",42,"75+ years","healthy",5.32,0.0426966292134832
+"99",43,"75+ years","healthy",5.7,0.0426966292134831
+"100",44,"75+ years","healthy",6.1,0.044943820224719
+"101",45,"75+ years","healthy",6.5,0.0449438202247191
+"102",46,"75+ years","healthy",6.9,0.0449438202247191
+"103",47,"75+ years","healthy",7.3,0.044943820224719
+"104",48,"75+ years","healthy",7.62,0.0359550561797753
+"105",49,"75+ years","healthy",7.94,0.0359550561797753
+"106",50,"75+ years","healthy",8.26,0.0359550561797752
+"107",51,"75+ years","healthy",8.58,0.0359550561797753
+"108",52,"75+ years","healthy",8.9,0.0359550561797753
+"109",35,"0-17 years","immunocompromised",0.625,0.115740740740741
+"110",36,"0-17 years","immunocompromised",1.25,0.115740740740741
+"111",37,"0-17 years","immunocompromised",1.875,0.115740740740741
+"112",38,"0-17 years","immunocompromised",2.5,0.115740740740741
+"113",39,"0-17 years","immunocompromised",2.66,0.0296296296296297
+"114",40,"0-17 years","immunocompromised",2.82,0.0296296296296296
+"115",41,"0-17 years","immunocompromised",2.98,0.0296296296296297
+"116",42,"0-17 years","immunocompromised",3.14,0.0296296296296296
+"117",43,"0-17 years","immunocompromised",3.3,0.0296296296296297
+"118",44,"0-17 years","immunocompromised",3.6,0.0555555555555555
+"119",45,"0-17 years","immunocompromised",3.9,0.0555555555555556
+"120",46,"0-17 years","immunocompromised",4.2,0.0555555555555556
+"121",47,"0-17 years","immunocompromised",4.5,0.0555555555555555
+"122",48,"0-17 years","immunocompromised",4.68,0.0333333333333333
+"123",49,"0-17 years","immunocompromised",4.86,0.0333333333333334
+"124",50,"0-17 years","immunocompromised",5.04,0.0333333333333333
+"125",51,"0-17 years","immunocompromised",5.22,0.0333333333333334
+"126",52,"0-17 years","immunocompromised",5.4,0.0333333333333333
+"127",35,"18-29 years","immunocompromised",0.625,0.115740740740741
+"128",36,"18-29 years","immunocompromised",1.25,0.115740740740741
+"129",37,"18-29 years","immunocompromised",1.875,0.115740740740741
+"130",38,"18-29 years","immunocompromised",2.5,0.115740740740741
+"131",39,"18-29 years","immunocompromised",2.66,0.0296296296296297
+"132",40,"18-29 years","immunocompromised",2.82,0.0296296296296296
+"133",41,"18-29 years","immunocompromised",2.98,0.0296296296296297
+"134",42,"18-29 years","immunocompromised",3.14,0.0296296296296296
+"135",43,"18-29 years","immunocompromised",3.3,0.0296296296296297
+"136",44,"18-29 years","immunocompromised",3.6,0.0555555555555555
+"137",45,"18-29 years","immunocompromised",3.9,0.0555555555555556
+"138",46,"18-29 years","immunocompromised",4.2,0.0555555555555556
+"139",47,"18-29 years","immunocompromised",4.5,0.0555555555555555
+"140",48,"18-29 years","immunocompromised",4.68,0.0333333333333333
+"141",49,"18-29 years","immunocompromised",4.86,0.0333333333333334
+"142",50,"18-29 years","immunocompromised",5.04,0.0333333333333333
+"143",51,"18-29 years","immunocompromised",5.22,0.0333333333333334
+"144",52,"18-29 years","immunocompromised",5.4,0.0333333333333333
+"145",35,"30-49 years","immunocompromised",0.625,0.115740740740741
+"146",36,"30-49 years","immunocompromised",1.25,0.115740740740741
+"147",37,"30-49 years","immunocompromised",1.875,0.115740740740741
+"148",38,"30-49 years","immunocompromised",2.5,0.115740740740741
+"149",39,"30-49 years","immunocompromised",2.66,0.0296296296296297
+"150",40,"30-49 years","immunocompromised",2.82,0.0296296296296296
+"151",41,"30-49 years","immunocompromised",2.98,0.0296296296296297
+"152",42,"30-49 years","immunocompromised",3.14,0.0296296296296296
+"153",43,"30-49 years","immunocompromised",3.3,0.0296296296296297
+"154",44,"30-49 years","immunocompromised",3.6,0.0555555555555555
+"155",45,"30-49 years","immunocompromised",3.9,0.0555555555555556
+"156",46,"30-49 years","immunocompromised",4.2,0.0555555555555556
+"157",47,"30-49 years","immunocompromised",4.5,0.0555555555555555
+"158",48,"30-49 years","immunocompromised",4.68,0.0333333333333333
+"159",49,"30-49 years","immunocompromised",4.86,0.0333333333333334
+"160",50,"30-49 years","immunocompromised",5.04,0.0333333333333333
+"161",51,"30-49 years","immunocompromised",5.22,0.0333333333333334
+"162",52,"30-49 years","immunocompromised",5.4,0.0333333333333333
+"163",35,"50-64 years","immunocompromised",0.625,0.115740740740741
+"164",36,"50-64 years","immunocompromised",1.25,0.115740740740741
+"165",37,"50-64 years","immunocompromised",1.875,0.115740740740741
+"166",38,"50-64 years","immunocompromised",2.5,0.115740740740741
+"167",39,"50-64 years","immunocompromised",2.66,0.0296296296296297
+"168",40,"50-64 years","immunocompromised",2.82,0.0296296296296296
+"169",41,"50-64 years","immunocompromised",2.98,0.0296296296296297
+"170",42,"50-64 years","immunocompromised",3.14,0.0296296296296296
+"171",43,"50-64 years","immunocompromised",3.3,0.0296296296296297
+"172",44,"50-64 years","immunocompromised",3.6,0.0555555555555555
+"173",45,"50-64 years","immunocompromised",3.9,0.0555555555555556
+"174",46,"50-64 years","immunocompromised",4.2,0.0555555555555556
+"175",47,"50-64 years","immunocompromised",4.5,0.0555555555555555
+"176",48,"50-64 years","immunocompromised",4.68,0.0333333333333333
+"177",49,"50-64 years","immunocompromised",4.86,0.0333333333333334
+"178",50,"50-64 years","immunocompromised",5.04,0.0333333333333333
+"179",51,"50-64 years","immunocompromised",5.22,0.0333333333333334
+"180",52,"50-64 years","immunocompromised",5.4,0.0333333333333333
+"181",35,"65-74 years","immunocompromised",0.95,0.106741573033708
+"182",36,"65-74 years","immunocompromised",1.9,0.106741573033708
+"183",37,"65-74 years","immunocompromised",2.85,0.106741573033708
+"184",38,"65-74 years","immunocompromised",3.8,0.106741573033708
+"185",39,"65-74 years","immunocompromised",4.18,0.0426966292134831
+"186",40,"65-74 years","immunocompromised",4.56,0.0426966292134831
+"187",41,"65-74 years","immunocompromised",4.94,0.0426966292134831
+"188",42,"65-74 years","immunocompromised",5.32,0.0426966292134832
+"189",43,"65-74 years","immunocompromised",5.7,0.0426966292134831
+"190",44,"65-74 years","immunocompromised",6.1,0.044943820224719
+"191",45,"65-74 years","immunocompromised",6.5,0.0449438202247191
+"192",46,"65-74 years","immunocompromised",6.9,0.0449438202247191
+"193",47,"65-74 years","immunocompromised",7.3,0.044943820224719
+"194",48,"65-74 years","immunocompromised",7.62,0.0359550561797753
+"195",49,"65-74 years","immunocompromised",7.94,0.0359550561797753
+"196",50,"65-74 years","immunocompromised",8.26,0.0359550561797752
+"197",51,"65-74 years","immunocompromised",8.58,0.0359550561797753
+"198",52,"65-74 years","immunocompromised",8.9,0.0359550561797753
+"199",35,"75+ years","immunocompromised",0.95,0.106741573033708
+"200",36,"75+ years","immunocompromised",1.9,0.106741573033708
+"201",37,"75+ years","immunocompromised",2.85,0.106741573033708
+"202",38,"75+ years","immunocompromised",3.8,0.106741573033708
+"203",39,"75+ years","immunocompromised",4.18,0.0426966292134831
+"204",40,"75+ years","immunocompromised",4.56,0.0426966292134831
+"205",41,"75+ years","immunocompromised",4.94,0.0426966292134831
+"206",42,"75+ years","immunocompromised",5.32,0.0426966292134832
+"207",43,"75+ years","immunocompromised",5.7,0.0426966292134831
+"208",44,"75+ years","immunocompromised",6.1,0.044943820224719
+"209",45,"75+ years","immunocompromised",6.5,0.0449438202247191
+"210",46,"75+ years","immunocompromised",6.9,0.0449438202247191
+"211",47,"75+ years","immunocompromised",7.3,0.044943820224719
+"212",48,"75+ years","immunocompromised",7.62,0.0359550561797753
+"213",49,"75+ years","immunocompromised",7.94,0.0359550561797753
+"214",50,"75+ years","immunocompromised",8.26,0.0359550561797752
+"215",51,"75+ years","immunocompromised",8.58,0.0359550561797753
+"216",52,"75+ years","immunocompromised",8.9,0.0359550561797753
+"217",35,"0-17 years","higher risk",0.625,0.115740740740741
+"218",36,"0-17 years","higher risk",1.25,0.115740740740741
+"219",37,"0-17 years","higher risk",1.875,0.115740740740741
+"220",38,"0-17 years","higher risk",2.5,0.115740740740741
+"221",39,"0-17 years","higher risk",2.66,0.0296296296296297
+"222",40,"0-17 years","higher risk",2.82,0.0296296296296296
+"223",41,"0-17 years","higher risk",2.98,0.0296296296296297
+"224",42,"0-17 years","higher risk",3.14,0.0296296296296296
+"225",43,"0-17 years","higher risk",3.3,0.0296296296296297
+"226",44,"0-17 years","higher risk",3.6,0.0555555555555555
+"227",45,"0-17 years","higher risk",3.9,0.0555555555555556
+"228",46,"0-17 years","higher risk",4.2,0.0555555555555556
+"229",47,"0-17 years","higher risk",4.5,0.0555555555555555
+"230",48,"0-17 years","higher risk",4.68,0.0333333333333333
+"231",49,"0-17 years","higher risk",4.86,0.0333333333333334
+"232",50,"0-17 years","higher risk",5.04,0.0333333333333333
+"233",51,"0-17 years","higher risk",5.22,0.0333333333333334
+"234",52,"0-17 years","higher risk",5.4,0.0333333333333333
+"235",35,"18-29 years","higher risk",0.625,0.115740740740741
+"236",36,"18-29 years","higher risk",1.25,0.115740740740741
+"237",37,"18-29 years","higher risk",1.875,0.115740740740741
+"238",38,"18-29 years","higher risk",2.5,0.115740740740741
+"239",39,"18-29 years","higher risk",2.66,0.0296296296296297
+"240",40,"18-29 years","higher risk",2.82,0.0296296296296296
+"241",41,"18-29 years","higher risk",2.98,0.0296296296296297
+"242",42,"18-29 years","higher risk",3.14,0.0296296296296296
+"243",43,"18-29 years","higher risk",3.3,0.0296296296296297
+"244",44,"18-29 years","higher risk",3.6,0.0555555555555555
+"245",45,"18-29 years","higher risk",3.9,0.0555555555555556
+"246",46,"18-29 years","higher risk",4.2,0.0555555555555556
+"247",47,"18-29 years","higher risk",4.5,0.0555555555555555
+"248",48,"18-29 years","higher risk",4.68,0.0333333333333333
+"249",49,"18-29 years","higher risk",4.86,0.0333333333333334
+"250",50,"18-29 years","higher risk",5.04,0.0333333333333333
+"251",51,"18-29 years","higher risk",5.22,0.0333333333333334
+"252",52,"18-29 years","higher risk",5.4,0.0333333333333333
+"253",35,"30-49 years","higher risk",0.625,0.115740740740741
+"254",36,"30-49 years","higher risk",1.25,0.115740740740741
+"255",37,"30-49 years","higher risk",1.875,0.115740740740741
+"256",38,"30-49 years","higher risk",2.5,0.115740740740741
+"257",39,"30-49 years","higher risk",2.66,0.0296296296296297
+"258",40,"30-49 years","higher risk",2.82,0.0296296296296296
+"259",41,"30-49 years","higher risk",2.98,0.0296296296296297
+"260",42,"30-49 years","higher risk",3.14,0.0296296296296296
+"261",43,"30-49 years","higher risk",3.3,0.0296296296296297
+"262",44,"30-49 years","higher risk",3.6,0.0555555555555555
+"263",45,"30-49 years","higher risk",3.9,0.0555555555555556
+"264",46,"30-49 years","higher risk",4.2,0.0555555555555556
+"265",47,"30-49 years","higher risk",4.5,0.0555555555555555
+"266",48,"30-49 years","higher risk",4.68,0.0333333333333333
+"267",49,"30-49 years","higher risk",4.86,0.0333333333333334
+"268",50,"30-49 years","higher risk",5.04,0.0333333333333333
+"269",51,"30-49 years","higher risk",5.22,0.0333333333333334
+"270",52,"30-49 years","higher risk",5.4,0.0333333333333333
+"271",35,"50-64 years","higher risk",0.625,0.115740740740741
+"272",36,"50-64 years","higher risk",1.25,0.115740740740741
+"273",37,"50-64 years","higher risk",1.875,0.115740740740741
+"274",38,"50-64 years","higher risk",2.5,0.115740740740741
+"275",39,"50-64 years","higher risk",2.66,0.0296296296296297
+"276",40,"50-64 years","higher risk",2.82,0.0296296296296296
+"277",41,"50-64 years","higher risk",2.98,0.0296296296296297
+"278",42,"50-64 years","higher risk",3.14,0.0296296296296296
+"279",43,"50-64 years","higher risk",3.3,0.0296296296296297
+"280",44,"50-64 years","higher risk",3.6,0.0555555555555555
+"281",45,"50-64 years","higher risk",3.9,0.0555555555555556
+"282",46,"50-64 years","higher risk",4.2,0.0555555555555556
+"283",47,"50-64 years","higher risk",4.5,0.0555555555555555
+"284",48,"50-64 years","higher risk",4.68,0.0333333333333333
+"285",49,"50-64 years","higher risk",4.86,0.0333333333333334
+"286",50,"50-64 years","higher risk",5.04,0.0333333333333333
+"287",51,"50-64 years","higher risk",5.22,0.0333333333333334
+"288",52,"50-64 years","higher risk",5.4,0.0333333333333333
+"289",35,"65-74 years","higher risk",0.95,0.106741573033708
+"290",36,"65-74 years","higher risk",1.9,0.106741573033708
+"291",37,"65-74 years","higher risk",2.85,0.106741573033708
+"292",38,"65-74 years","higher risk",3.8,0.106741573033708
+"293",39,"65-74 years","higher risk",4.18,0.0426966292134831
+"294",40,"65-74 years","higher risk",4.56,0.0426966292134831
+"295",41,"65-74 years","higher risk",4.94,0.0426966292134831
+"296",42,"65-74 years","higher risk",5.32,0.0426966292134832
+"297",43,"65-74 years","higher risk",5.7,0.0426966292134831
+"298",44,"65-74 years","higher risk",6.1,0.044943820224719
+"299",45,"65-74 years","higher risk",6.5,0.0449438202247191
+"300",46,"65-74 years","higher risk",6.9,0.0449438202247191
+"301",47,"65-74 years","higher risk",7.3,0.044943820224719
+"302",48,"65-74 years","higher risk",7.62,0.0359550561797753
+"303",49,"65-74 years","higher risk",7.94,0.0359550561797753
+"304",50,"65-74 years","higher risk",8.26,0.0359550561797752
+"305",51,"65-74 years","higher risk",8.58,0.0359550561797753
+"306",52,"65-74 years","higher risk",8.9,0.0359550561797753
+"307",35,"75+ years","higher risk",0.95,0.106741573033708
+"308",36,"75+ years","higher risk",1.9,0.106741573033708
+"309",37,"75+ years","higher risk",2.85,0.106741573033708
+"310",38,"75+ years","higher risk",3.8,0.106741573033708
+"311",39,"75+ years","higher risk",4.18,0.0426966292134831
+"312",40,"75+ years","higher risk",4.56,0.0426966292134831
+"313",41,"75+ years","higher risk",4.94,0.0426966292134831
+"314",42,"75+ years","higher risk",5.32,0.0426966292134832
+"315",43,"75+ years","higher risk",5.7,0.0426966292134831
+"316",44,"75+ years","higher risk",6.1,0.044943820224719
+"317",45,"75+ years","higher risk",6.5,0.0449438202247191
+"318",46,"75+ years","higher risk",6.9,0.0449438202247191
+"319",47,"75+ years","higher risk",7.3,0.044943820224719
+"320",48,"75+ years","higher risk",7.62,0.0359550561797753
+"321",49,"75+ years","higher risk",7.94,0.0359550561797753
+"322",50,"75+ years","higher risk",8.26,0.0359550561797752
+"323",51,"75+ years","higher risk",8.58,0.0359550561797753
+"324",52,"75+ years","higher risk",8.9,0.0359550561797753
