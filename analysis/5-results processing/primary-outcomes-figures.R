@@ -12,18 +12,18 @@ library(reshape2)
 library(data.table)
 
 #Read in strategies
-strat_real <- read.csv("simulation-results-7/strat_real-updated.csv")[,-1]
-strat_0 <- read.csv("simulation-results-7/pessimistic/strat_0.csv")[,-1]
-strat_1 <- read.csv("simulation-results-7/pessimistic/strat_1.csv")[,-1]
-strat_2 <- read.csv("simulation-results-7/pessimistic/strat_2.csv")[,-1]
-strat_3 <- read.csv("simulation-results-7/pessimistic/strat_3.csv")[,-1]
-strat_4 <- read.csv("simulation-results-7/pessimistic/strat_4.csv")[,-1]
-strat_5 <- read.csv("simulation-results-7/pessimistic/strat_5.csv")[,-1]
-strat_6 <- read.csv("simulation-results-7/pessimistic/strat_6.csv")[,-1]
-strat_7 <- read.csv("simulation-results-7/pessimistic/strat_7.csv")[,-1]
-strat_8 <- read.csv("simulation-results-7/pessimistic/strat_8.csv")[,-1]
-strat_9 <- read.csv("simulation-results-7/pessimistic/strat_9.csv")[,-1]
-strat_10 <- read.csv("simulation-results-7/pessimistic/strat_10.csv")[,-1]
+strat_real <- read.csv("simulation-results/strat_real-updated.csv")[,-1]
+strat_0 <- read.csv("simulation-results/optimistic/strat_0.csv")[,-1]
+strat_1 <- read.csv("simulation-results/optimistic/strat_1.csv")[,-1]
+strat_2 <- read.csv("simulation-results/optimistic/strat_2.csv")[,-1]
+strat_3 <- read.csv("simulation-results/optimistic/strat_3.csv")[,-1]
+strat_4 <- read.csv("simulation-results/optimistic/strat_4.csv")[,-1]
+strat_5 <- read.csv("simulation-results/optimistic/strat_5.csv")[,-1]
+strat_6 <- read.csv("simulation-results/optimistic/strat_6.csv")[,-1]
+strat_7 <- read.csv("simulation-results/optimistic/strat_7.csv")[,-1]
+strat_8 <- read.csv("simulation-results/optimistic/strat_8.csv")[,-1]
+strat_9 <- read.csv("simulation-results/optimistic/strat_9.csv")[,-1]
+strat_10 <- read.csv("simulation-results/optimistic/strat_10.csv")[,-1]
 
 #cleaning results (general risk group-specific)
 cleaning_sim_general <- function(df) {

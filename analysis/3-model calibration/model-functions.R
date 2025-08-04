@@ -1,5 +1,5 @@
 ########################################################################################################################
-#Title: Vaccination Interventions (Dynamic with Age Mixing)
+#Title: Vaccination Model
 #Author: Hailey Park
 #Date: February 5th, 2024
 ########################################################################################################################
@@ -51,7 +51,7 @@ outcome_occurrence <- function(age, inf, day, risk, immuno, vacc, perfect_immuni
   df_individuals_eligible <- merge(df_individuals_eligible, waning_data_clean_alt, all.x = TRUE)
   setkeyv(df_individuals_eligible, c("age_group", "risk_group"))
 
-  # print(df_individuals_eligible %>% filter(index_individual == 2140979))
+  #print(df_individuals_eligible %>% filter(index_individual == 2140979)) #print out individual waning protection throughout simulation as a check
   #print(df_individuals_eligible %>% filter(index_individual == 1325471))
 
   #Individuals who are unvaccinated and no prior infection history has no protection
@@ -81,7 +81,7 @@ outcome_occurrence <- function(age, inf, day, risk, immuno, vacc, perfect_immuni
   return(list(severe_outcomes, nonsevere_outcomes, severe_pe, nonsevere_pe))
 }
 ########################################################################################################################
-#This is the one year booster simulation, July 2023-July 2024
+#This is the historical vaccination simulation, over an 18-month period (July 1, 2023 - January 1, 2025)
 
 historicalVaccinationSimulation <- function(df, params){
   
@@ -183,7 +183,7 @@ historicalVaccinationSimulation <- function(df, params){
   prior_protection_severe <- protection_at_model_init[[2]] 
   prior_protection_nonsevere <- protection_at_model_init[[3]] 
   
-    #Iterate through each time step
+  #Iterate through each time step
   for (i in (1:547)) {
     
     print(paste0("Day: ", i)) 
@@ -194,7 +194,7 @@ historicalVaccinationSimulation <- function(df, params){
       time_since_last[vaccine_wave_index] <- 1
     }
 
-    #Staggering updated booster (2nd dose) vaccination between the last 126 days
+    #Staggering updated booster (2nd dose) vaccination between the last 126 days of year 1
     if(i %in% c(240:365)){
       vaccine_wave_2_index <- which(second_vaccine_wave == i)
       time_since_last[vaccine_wave_2_index] <- 1

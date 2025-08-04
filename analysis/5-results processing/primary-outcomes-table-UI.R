@@ -73,12 +73,6 @@ ui_95_upper  <- function(x) {
 }
 
 
-# 
-# extract_number <- function(x) {
-#   as.numeric(unlist(stringr::str_extract_all(x, '\\d+(\\.\\d+)?(?![A-Z])')))
-# }
-
-
 cleaned_results_mean <- list(do.call(rbind, strat_real) %>% group_by(general_risk_cat) %>% summarise_all(mean, na.rm = TRUE) , 
                         do.call(rbind, strat_0) %>% group_by(general_risk_cat) %>% summarise_all(mean, na.rm = TRUE) , 
                         do.call(rbind, strat_1) %>% group_by(general_risk_cat) %>% summarise_all(mean, na.rm = TRUE) , 

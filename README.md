@@ -12,7 +12,7 @@ This study is in-progress.
   * `1-waning model`: contains code for constructing the waning protection curves by risk group, and waning curves used for sensitivity analyses
   * `2-model initialization`: contains code for constructing a hypothetical cohort of 50 million individuals (for main analysis) and 1 million individuals (for model calibration) that broadly resembles the demographic characteristics seen in the United States. Immune history of each individual (prior vaccination, prior infection) in the cohort is empirically estimated using historical data.
   * `3-model calibration`: contains code for calibrating the model to observed COVID-19 severe case data between July 1, 2023 - January 1, 2025. The calibration uses a MCMC approach to calibrate the model parameters (month-specific lambdas, baseline case-hospitalization fraction, time-since shift).
-  * `4-main analysis`: contains code for running different vaccination scenarios. See the `README.md` inside this folder for more information.
+  * `4-main analysis`: contains code for running different vaccination scenarios. See the `README.md` inside this folder for more information (file not made yet).
   * `5-results processing`: contains all code needed for processing of simulation results.
   * `6-data cleaning`: contains all code needed for initial cleaning of raw data
 
