@@ -20,6 +20,7 @@ library(lme4)
 library(merTools)
 library(sjstats)
 
+
 #Load in raw datasets (these .csv files are from an excel doc of my manual review of recent waning literature)
 waning_data <- read.csv("data/processed-data/severe waning data absolute 120324 mean.csv") 
 weights <- read.csv("data/processed-data/severe waning data absolute 120324 weights.csv") 
