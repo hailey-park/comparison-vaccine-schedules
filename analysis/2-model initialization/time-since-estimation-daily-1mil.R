@@ -173,10 +173,9 @@ write.csv(combined, "data/clean-data/entire_population_model_initialization_dail
 #PLOTS OF TIME-SINCE EVENT DISTRIBUTION FOR ENTIRE SIMULATED POPULATION
 
 pdf("time-since-plots-1mil.pdf")
-
-inspection <- read.csv("data/clean-data/entire_population_model_initialization_daily_1mil_updated.csv")[,-1] %>%
-  filter(age_group == "0-17 years") %>% dplyr::select(prior_vacc, prior_inf, time_since_last_dose, time_since_last_inf, time_since_last_reinf, time_since_last_dose_inf) %>%
-  group_by(prior_vacc, time_since_last_dose) %>% summarise(total = n()) %>% filter(prior_vacc != 'unvax')
+pop_data <- read.csv("data/clean-data/entire_population_model_initialization_daily_1mil_updated.csv")[,-1] #%>%
+  # filter(age_group == "0-17 years") %>% dplyr::select(prior_vacc, prior_inf, time_since_last_dose, time_since_last_inf, time_since_last_reinf, time_since_last_dose_inf) %>%
+  # group_by(prior_vacc, time_since_last_dose) %>% summarise(total = n()) %>% filter(prior_vacc != 'unvax')
 
 for(i in c(1:6)) {
   age_group_label <- case_when(i == 1 ~ "0-17 years",
@@ -187,9 +186,9 @@ for(i in c(1:6)) {
                                i == 6 ~ "75+ years",
                                TRUE ~ NA) 
   
-  inspection <- time_since_results[[i]] %>% dplyr::select(prior_vacc, prior_inf, time_since_last_dose, time_since_last_inf, time_since_last_reinf, time_since_last_dose_inf) %>%
+  inspection <- pop_data %>% filter(age_group == age_group_label) %>% dplyr::select(prior_vacc, prior_inf, time_since_last_dose, time_since_last_inf, time_since_last_reinf, time_since_last_dose_inf) %>%
     group_by(prior_vacc, time_since_last_dose) %>% summarise(total = n()) %>% filter(prior_vacc != 'unvax')
-  
+
   observed_data <- as.data.frame(rbind(fully_vax_doses_by_day %>% mutate(prior_vacc = "observed_fullvax"),
                                        booster_doses_1st_by_day %>% mutate(prior_vacc = "observed_boosted_1st"),
                                        booster_doses_2nd_by_day %>% mutate(prior_vacc = "observed_boosted_2nd"))) %>% 
@@ -208,8 +207,8 @@ for(i in c(1:6)) {
          ggtitle(paste0("Simulated Time-Since Last Vaccination\nAge Group: ", age_group_label)))
   
   
-  inspection <- time_since_results[[i]] %>% dplyr::select(prior_vacc, prior_inf, time_since_last_dose, time_since_last_inf, time_since_last_reinf, time_since_last_dose_inf) %>%
-    group_by(time_since_last_inf) %>% summarise(total = n()) #%>% filter(!is.na(time_since_last_reinf))
+  inspection <- pop_data %>% filter(age_group == age_group_label) %>% dplyr::select(prior_vacc, prior_inf, time_since_last_dose, time_since_last_inf, time_since_last_reinf, time_since_last_dose_inf) %>%
+    group_by(time_since_last_inf) %>% summarise(total = n()) %>% filter(!is.na(time_since_last_inf))
   
   observed_data <- cases_by_day 
   
@@ -225,8 +224,8 @@ for(i in c(1:6)) {
          theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
          ggtitle(paste0("Simulated Time-Since Last Infection\nAge Group: ", age_group_label)))
   
-  inspection <- time_since_results[[i]] %>% dplyr::select(prior_vacc, prior_inf, time_since_last_dose, time_since_last_inf, time_since_last_reinf, time_since_last_dose_inf) %>%
-    group_by(time_since_last_inf) %>% summarise(total = n()) %>% filter(!is.na(time_since_last_reinf))
+  inspection <- pop_data %>% filter(age_group == age_group_label) %>% dplyr::select(prior_vacc, prior_inf, time_since_last_dose, time_since_last_inf, time_since_last_reinf, time_since_last_dose_inf) %>%
+    group_by(time_since_last_reinf) %>% summarise(total = n()) %>% filter(!is.na(time_since_last_reinf))
   
   observed_data <- cases_by_day 
   
@@ -243,10 +242,8 @@ for(i in c(1:6)) {
          ggtitle(paste0("Simulated Time-Since Last Re-infection\nAge Group: ", age_group_label)))
   
   
-  inspection <- time_since_results[[i]] %>% dplyr::select(prior_vacc, prior_inf, time_since_last_dose, time_since_last_inf, time_since_last_dose_inf) %>%
-    group_by(time_since_last_dose_inf) %>% summarise(total = n()) %>%
-    mutate(time_since_adjusted = floor_date(time_since_last_dose_inf, unit = "day")) %>%
-    group_by(time_since_adjusted) %>% summarise(total = sum(total))
+  inspection <- pop_data %>% filter(age_group == age_group_label) %>% dplyr::select(prior_vacc, prior_inf, time_since_last_dose, time_since_last_inf, time_since_last_dose_inf) %>%
+    group_by(time_since_last_dose_inf) %>% summarise(total = n()) 
   
   
   #plot simulated time since

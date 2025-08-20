@@ -200,6 +200,19 @@ ggplot(data = combined_coverage_data, aes(x = day, y = coverage, color = age_gro
   ylab("Proportion") +
   ggtitle("Proportion of Completed 2nd Booster Over Time")
   
+################################################################################################### 
+#Estimate proportion of each age group that is boosted with 2 doses (among all those boosted)
+# NOTE: This will be used for model initialization (population assignment of immunity statuses)
 
+#Coverage of booster (2 doses) coverage by July 1, 2023 by each age group
+booster_2nd_coverage <- combined_coverage_data %>% filter(week == as.Date("2023-06-25")) %>%
+  dplyr::select(age_group, coverage) %>% rename(coverage_2nd_booster = coverage)
 
+#Coverage of booster (1+) coverage by July 1, 2023 by each age group
+booster_1st_coverage <- combined_coverage_data %>% filter(week == as.Date("2023-05-07")) %>%
+  mutate(coverage_1st_booster = total_boosted_1st/total_pop) %>%
+  dplyr::select(age_group, coverage_1st_booster)
 
+#Estimate proportion of each age group that is boosted twice among all those boosted with 1+ doses
+booster_2nd_proportion <- merge(booster_1st_coverage, booster_2nd_coverage, by = "age_group") %>%
+  mutate(prop_2nd_boosted_among_boosted = coverage_2nd_booster/coverage_1st_booster)
