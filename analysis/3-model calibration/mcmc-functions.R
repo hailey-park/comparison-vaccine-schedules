@@ -5,7 +5,6 @@
 ########################################################################################################################
 
 prediction <- function (params) {
-  
 
   #Read parameters needed for model setup
   baseline_case_hosp_frac <<- params[19]
@@ -35,7 +34,8 @@ prediction <- function (params) {
 }
 
 
-# The score is the DTW distance of the simulated inc predictions from the observed data.
+# The score is the dynamic time warping (DTW) distance between the simulated inc predictions 
+# and the observed data (units = weeks).
 score <- function (sim_pred, data) {
 
   age_18_29 <- dtw(data$`18-29 years`, sim_pred$`18-29 years`,
@@ -93,8 +93,9 @@ posterior <- function(param){
   }
 
 
-#Choosing a new parameter value close to the old value based on some 
-#probability density that is called the proposal function
+# Choosing a new parameter value close to the old value based on some 
+# probability density that is called the proposal function. Here, the 
+# proposal is a constrained normal distribution centered at the current value
 proposalfunction <- function(param){
   
   lambda_1 = min(max(rnorm(1, mean=param[1], sd=0.0005), 0.98), 1.01)
@@ -140,13 +141,18 @@ run_metropolis_MCMC <- function(startvalue, max_iteration, starting_index){
   for (i in starting_index:max_iteration){
     print(i)
     print(chain[i,1:20])
+    
+    # Generate a new candidate sample from the proposal distribution
     proposal = proposalfunction(chain[i,1:20])
     print("Proposal: ")
     print(proposal)
     
+    # Compute posterior probability of proposal vs current state
     posterior_proposal <- posterior(proposal)
     posterior_current <- chain[i,21]
     
+    # Compute acceptance ratio (using sigmoid scaled to (0,1))
+    # If random draw is less than acceptance ratio, accept the proposal
     acceptance_ratio <- sigmoid((posterior_proposal - posterior_current))
     random_probab <- runif(1)
     
@@ -158,8 +164,7 @@ run_metropolis_MCMC <- function(startvalue, max_iteration, starting_index){
       chain[i+1,21] <- posterior_proposal
       chain[i+1,22] <- acceptance_ratio
       
-      
-    }else{
+    } else{
       chain[i+1,1:20] <- chain[i, 1:20]
       chain[i+1,21] <- posterior_current
       chain[i+1,22] <- acceptance_ratio
@@ -169,7 +174,7 @@ run_metropolis_MCMC <- function(startvalue, max_iteration, starting_index){
     print(paste0("Iteration ", i, " Chain: "))
     print(chain[i+1,])
     
-    #Every simulation, write the chain to .csv (since each simulation run takes a few min so calibration takes much longer than couple of hours)
+    # Every simulation, write the chain to .csv (since each simulation run takes a few min so calibration takes much longer than couple of hours)
     if (i%%1 == 0) {
       write.csv(chain, "mcmc-output/mcmc-params-18lambdas-window2-052325.csv")
     }

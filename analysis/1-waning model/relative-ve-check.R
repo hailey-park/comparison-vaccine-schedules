@@ -4,8 +4,6 @@
 #Date: November 1, 2023
 ###################################################################################################
 
-# Kate was here. hi. HEEHEEEEEE HAAHAAAA
-
 rm(list=ls())
 
 setwd(here::here())
