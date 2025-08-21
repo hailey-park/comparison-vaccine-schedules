@@ -14,21 +14,27 @@ weekly_nonsevere_incidence <- merge(weekly_severe_incidence, age_ratio_case_hosp
          higher_risk_inc = adj_inc * (1/(ratio * baseline_case_hosp_frac))) 
 
 #Calculating average nonsevere incidence around model initialization (July 2023), which will be used later to estimate total circulating infections to feed into the model
-average_nonsevere_incidence <- melt(weekly_nonsevere_incidence %>% filter(weeks_since < 4) %>% group_by(age_group) %>% 
-  dplyr::summarise(across(healthy_inc:higher_risk_inc, mean)), id = "age_group") %>% 
-  rowwise() %>% dplyr::mutate(risk_group = strsplit(as.character(variable), split="_")[[1]][1],
-                              risk_group = if_else(risk_group == "higher", "higher risk", risk_group)) %>%
-  dplyr::rename(nonsevere_inc = value) %>% dplyr::select(-variable)
+average_nonsevere_incidence <- melt(weekly_nonsevere_incidence %>% 
+                                      filter(weeks_since < 4) %>% 
+                                      group_by(age_group) %>% 
+                                      dplyr::summarise(across(healthy_inc:higher_risk_inc, mean)), id = "age_group") %>% 
+  rowwise() %>% 
+  dplyr::mutate(risk_group = strsplit(as.character(variable), split="_")[[1]][1],
+                risk_group = if_else(risk_group == "higher", "higher risk", risk_group)) %>%
+  dplyr::rename(nonsevere_inc = value) %>% 
+  dplyr::select(-variable)
 
 #Estimate the total currently circulating infections @ t = 0 using the average severe and nonsevere incidences
-inf_by_age <- merge(merge(entire_pop %>% group_by(age_group, risk_group) %>% dplyr::summarise(total_pop = n()),
+inf_by_age <- merge(merge(entire_pop %>% group_by(age_group, risk_group) %>% 
+                            dplyr::summarise(total_pop = n()),
                           average_severe_incidence, by = c("age_group", "risk_group"), all.x = TRUE),
                     average_nonsevere_incidence, by = c("age_group", "risk_group"), all.x = TRUE) %>% 
   dplyr::mutate(nonsevere_inf = (total_pop * nonsevere_inc/100000)/7 , #dividing by 7 to convert weekly to daily
-         severe_inf = if_else(age_group == "0-17 years", 0, (total_pop * severe_inc/100000)/7 ), 
-         total_inf = (nonsevere_inf + severe_inf) * 5) %>% #multiplying by 5 because infectious period is 5 days
-  group_by(age_group) %>% dplyr::summarise(total_inf = ceiling(sum(total_inf)),
-                                    total_pop = sum(total_pop))
+                severe_inf = if_else(age_group == "0-17 years", 0, (total_pop * severe_inc/100000)/7 ), 
+                total_inf = (nonsevere_inf + severe_inf) * 5) %>% #multiplying by 5 because infectious period is 5 days
+  group_by(age_group) %>% 
+  dplyr::summarise(total_inf = ceiling(sum(total_inf)),
+                   total_pop = sum(total_pop))
 
 #Tracking the last 8 days of infection counts because 3 days (latent period) and 5 days (infectious period)
 infection_tracker_df <- data.frame(days_since = c(1:8),
@@ -96,15 +102,19 @@ protection_at_model_initialization <- function(df){
   with_protection[hybrid_index, c("severe_ve_pred", "nonsevere_ve_pred")] <- with_protection[hybrid_index, c("severe_hybrid_ve", "nonsevere_hybrid_ve")]
   
   #calculate multiplier adjustments (this accounts for the difference in magnitude between severe and nonsevere protection, by risk group)
-  group_multiplier_adj <- with_protection %>% group_by(age_group, risk_group) %>% dplyr::summarise(mean_severe_ve = mean(severe_ve_pred),
-                                                                                                   mean_nonsevere_ve = mean(nonsevere_ve_pred)) %>%
+  group_multiplier_adj <- with_protection %>% 
+    group_by(age_group, risk_group) %>% 
+    dplyr::summarise(mean_severe_ve = mean(severe_ve_pred),
+                     mean_nonsevere_ve = mean(nonsevere_ve_pred)) %>%
     dplyr::mutate(multiplier_adj = (1-mean_severe_ve)/(1-mean_nonsevere_ve))
   
+  age_group_multiplier_adj <- with_protection %>% 
+    group_by(age_group) %>% 
+    dplyr::summarise(mean_severe_ve = mean(severe_ve_pred),
+                     mean_nonsevere_ve = mean(nonsevere_ve_pred)) 
   
-  age_group_multiplier_adj <- with_protection %>% group_by(age_group) %>% dplyr::summarise(mean_severe_ve = mean(severe_ve_pred),
-                                                                                    mean_nonsevere_ve = mean(nonsevere_ve_pred)) 
-  
-  return(list(group_multiplier_adj %>% dplyr::select(age_group, risk_group, mean_nonsevere_ve, mean_severe_ve, multiplier_adj),
+  return(list(group_multiplier_adj %>% 
+                dplyr::select(age_group, risk_group, mean_nonsevere_ve, mean_severe_ve, multiplier_adj),
               with_protection$severe_ve_pred,
               with_protection$nonsevere_ve_pred))
 }
@@ -122,32 +132,41 @@ severe_infection_multipliers <- setDT(merge(merge(average_severe_incidence, aver
                                               mutate(multiplier = severe_inc/nonsevere_inc),
                                                   mult_adj, by = c("age_group", "risk_group"), all.x = TRUE) %>%
   mutate(multiplier = if_else(age_group == "0-17 years", 0, multiplier)))
-setkeyv(severe_infection_multipliers, c("age_group", "risk_group"))
-############################################################################################
-#Beta calculation: We have 3 age-specific lambdas (0-17 years, 18-64 years, 65+ years). For the 18-64 year and 65+ year
-# lambdas, we need to account for differences in magnitude of the nonsevere incidence and (1-PE) estimate among the further-
-# stratified age groups. We are assuming that the 18-64 yr lambda has the 18-29 year age group as baseline, and the 65+ yr
-# lambda has the 65-74 year age group as baseline. Beta is fixed. We are using the average nonsevere incidence and average 
-# (1-PE) estimates by age group at t = 0 to calculate beta.
-beta_calc <- merge(protection_at_model_init[[1]] %>% dplyr::select(-multiplier_adj), average_nonsevere_incidence, by = c("age_group", "risk_group"), all.x = TRUE) 
 
-beta_0_17 <- beta_calc %>% filter(age_group == "0-17 years") %>%
+setkeyv(severe_infection_multipliers, c("age_group", "risk_group"))
+
+############################################################################################
+# Beta calculation: We have 3 age-specific lambdas (0-17 years, 18-64 years, 65+ years). For the 18-64 year and 65+ year
+#   lambdas, we need to account for differences in magnitude of the nonsevere incidence and (1-PE) estimate among the further-
+#   stratified age groups. We are assuming that the 18-64 yr lambda has the 18-29 year age group as baseline, and the 65+ yr
+#   lambda has the 65-74 year age group as baseline. Beta is fixed. We are using the average nonsevere incidence and average 
+#   (1-PE) estimates by age group at t = 0 to calculate beta.
+beta_calc <- merge(protection_at_model_init[[1]] %>% 
+                     dplyr::select(-multiplier_adj), average_nonsevere_incidence, by = c("age_group", "risk_group"), all.x = TRUE) 
+
+beta_0_17 <- beta_calc %>% 
+  filter(age_group == "0-17 years") %>%
   mutate(pe_adj = (1 - mean_nonsevere_ve[1])/(1 - mean_nonsevere_ve),
          inc_adj = nonsevere_inc/nonsevere_inc[1],
          beta = pe_adj * inc_adj) %>%
   dplyr::select(age_group, risk_group, beta, mean_nonsevere_ve)
-beta_18_64 <- beta_calc %>% filter(age_group %in% c("18-29 years", "30-49 years", "50-64 years")) %>%
+
+beta_18_64 <- beta_calc %>% 
+  filter(age_group %in% c("18-29 years", "30-49 years", "50-64 years")) %>%
   mutate(pe_adj = (1 - mean_nonsevere_ve[1])/(1 - mean_nonsevere_ve),
          inc_adj = nonsevere_inc/nonsevere_inc[1],
          beta = pe_adj * inc_adj) %>%
   dplyr::select(age_group, risk_group, beta, mean_nonsevere_ve)
-beta_65_plus <- beta_calc %>% filter(age_group %in% c("65-74 years", "75+ years")) %>%
+
+beta_65_plus <- beta_calc %>% 
+  filter(age_group %in% c("65-74 years", "75+ years")) %>%
   mutate(pe_adj = (1 - mean_nonsevere_ve[1])/(1 - mean_nonsevere_ve),
          inc_adj = nonsevere_inc/nonsevere_inc[1],
          beta = pe_adj * inc_adj) %>%
   dplyr::select(age_group, risk_group, beta, mean_nonsevere_ve)
 
 beta <- setDT(rbind(beta_0_17, beta_18_64, beta_65_plus))
+
 setkeyv(beta, c("age_group", "risk_group"))
 
 
@@ -159,10 +178,15 @@ set_age_lambdas <- function() {
   avg_nonsevere_inc_adj <- average_nonsevere_incidence %>%
     mutate(nonsevere_inc = (nonsevere_inc/100000)/7)
   
-  lambda_0_17 <- sum((avg_nonsevere_inc_adj %>% filter(age_group == "0-17 years"))$nonsevere_inc)/sum((beta%>% filter(age_group == "0-17 years"))$beta  * (1-(beta%>% filter(age_group == "0-17 years"))$mean_nonsevere_ve) * (total_inf/1000000))
-  lambda_18_64 <- sum((avg_nonsevere_inc_adj %>% filter(age_group %in% c("18-29 years", "30-49 years", "50-64 years")))$nonsevere_inc)/
+  lambda_0_17 <- sum((avg_nonsevere_inc_adj %>% 
+                        filter(age_group == "0-17 years"))$nonsevere_inc)/sum((beta%>% filter(age_group == "0-17 years"))$beta  * (1-(beta%>% filter(age_group == "0-17 years"))$mean_nonsevere_ve) * (total_inf/1000000))
+  
+  lambda_18_64 <- sum((avg_nonsevere_inc_adj %>% 
+                         filter(age_group %in% c("18-29 years", "30-49 years", "50-64 years")))$nonsevere_inc)/
     sum((beta%>% filter(age_group %in% c("18-29 years", "30-49 years", "50-64 years")))$beta  * (1-(beta%>% filter(age_group %in% c("18-29 years", "30-49 years", "50-64 years")))$mean_nonsevere_ve) * (total_inf/1000000))
-  lambda_65 <- sum((avg_nonsevere_inc_adj %>% filter(age_group %in% c("65-74 years", "75+ years")))$nonsevere_inc)/sum((beta%>% filter(age_group %in% c("65-74 years", "75+ years")))$beta  * (1-(beta%>% filter(age_group %in% c("65-74 years", "75+ years")))$mean_nonsevere_ve) * (total_inf/1000000))
+  
+  lambda_65 <- sum((avg_nonsevere_inc_adj %>% 
+                      filter(age_group %in% c("65-74 years", "75+ years")))$nonsevere_inc)/sum((beta%>% filter(age_group %in% c("65-74 years", "75+ years")))$beta  * (1-(beta%>% filter(age_group %in% c("65-74 years", "75+ years")))$mean_nonsevere_ve) * (total_inf/1000000))
   
   return(c(lambda_0_17, lambda_18_64, lambda_65))
 }
