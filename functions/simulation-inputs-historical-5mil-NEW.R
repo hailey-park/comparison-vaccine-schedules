@@ -1,0 +1,352 @@
+###################################################################################################
+#Title: Simulation data inputs (historical)
+#Author: Hailey Park
+#Date: December 20, 2024
+###################################################################################################
+
+# Read in cleaned population df:
+clean_df <- readRDS("data/clean-data/clean_population_df_5mil.RDS")
+
+#Waning curves
+waning_data_clean <- setDT(read.csv("data/clean-data/waning_data_clean.csv")[,-1])
+waning_data_clean_alt <- setDT(read.csv("data/clean-data/waning_data_clean_alt.csv")[,-1]) %>%
+  filter(weeks %% 2 == 0) %>% mutate(weeks = weeks/2)
+setkeyv(waning_data_clean_alt, c("immuno", "weeks", "prior_inf", "prior_vacc"))
+
+# Calculate multiplier adjustments (this accounts for the difference in magnitude between severe and non severe protection, by risk group)
+protection_at_model_initialization <- function(df) {
+  
+  # --- Step 1: Merge protection data with waning data, ensuring valid weeks range (1–730) ---
+  with_protection <- df %>%
+    rowwise() %>%
+    mutate(weeks_since_last_dose_inf = min(max(1, weeks_since_last_dose_inf), 730)) %>%
+    ungroup() %>%
+    merge(
+      waning_data_clean,
+      by.x = c("immuno", "weeks_since_last_dose_inf"),
+      by.y = c("immuno", "weeks"),
+      all.x = TRUE
+    ) %>%
+    arrange(individual)
+  
+  # --- Step 2: Apply protection rules for different immune histories ---
+  
+  # 2a. Unvaccinated and no prior infection → no protection
+  immune_naive_index <- which(
+    with_protection$prior_vacc == "unvax" & 
+      with_protection$prior_inf == "noinf"
+  )
+  with_protection[immune_naive_index, c("severe_ve_pred", "nonsevere_ve_pred")] <- 0
+  
+  # 2b. Infection within 3 months (1–13 weeks) → perfect immunity
+  perfect_immunity_index <- which(
+    with_protection$weeks_since_last_dose_inf < with_protection$weeks_since_last_dose &
+      with_protection$prior_inf != "noinf" &
+      with_protection$weeks_since_last_dose_inf %in% 1:13
+  )
+  with_protection[perfect_immunity_index, c("severe_ve_pred", "nonsevere_ve_pred")] <- 1
+  
+  # 2c. Unvaccinated + prior infection → infection-only waning immunity
+  prior_inf_only_index <- which(
+    with_protection$prior_vacc == "unvax" &
+      with_protection$prior_inf != "noinf"
+  )
+  with_protection[prior_inf_only_index, c("severe_ve_pred", "nonsevere_ve_pred")] <-
+    with_protection[prior_inf_only_index, c("severe_inf_ve", "nonsevere_inf_ve")]
+  
+  # 2d. Vaccinated + no infection → vaccine-only waning immunity
+  vaccine_only_index <- which(
+    with_protection$prior_vacc != "unvax" &
+      with_protection$prior_inf == "noinf"
+  )
+  with_protection[vaccine_only_index, c("severe_ve_pred", "nonsevere_ve_pred")] <-
+    with_protection[vaccine_only_index, c("severe_vacc_ve", "nonsevere_vacc_ve")]
+  
+  # 2e. Vaccinated + infected → hybrid waning immunity
+  hybrid_index <- which(
+    with_protection$prior_vacc != "unvax" &
+      with_protection$prior_inf != "noinf"
+  )
+  with_protection[hybrid_index, c("severe_ve_pred", "nonsevere_ve_pred")] <-
+    with_protection[hybrid_index, c("severe_hybrid_ve", "nonsevere_hybrid_ve")]
+  
+  # --- Step 3: Compute group-level multipliers and offsets ---
+  group_multiplier_adj <- with_protection %>%
+    group_by(age_group, risk_group) %>%
+    summarise(
+      mean_severe_ve = mean(severe_ve_pred),
+      mean_nonsevere_ve = mean(nonsevere_ve_pred),
+      .groups = "drop"
+    ) %>%
+    mutate(multiplier_adj = (1 - mean_severe_ve) / (1 - mean_nonsevere_ve))
+  
+  age_group_multiplier_adj <- with_protection %>%
+    group_by(age_group) %>%
+    summarise(
+      mean_severe_ve = mean(severe_ve_pred),
+      mean_nonsevere_ve = mean(nonsevere_ve_pred),
+      .groups = "drop"
+    ) %>%
+    mutate(immunity_offset = (1 - mean_severe_ve) / (1 - mean_nonsevere_ve))
+  
+  # --- Step 4: Return all relevant outputs as a list ---
+  return(list(
+    age_group_multiplier_adj %>%
+      dplyr::select(age_group, mean_nonsevere_ve, mean_severe_ve, immunity_offset),
+    
+    with_protection$severe_ve_pred,
+    with_protection$nonsevere_ve_pred,
+    
+    group_multiplier_adj %>%
+      dplyr::select(age_group, risk_group, mean_nonsevere_ve, mean_severe_ve)
+  ))
+}
+
+#Run function to generate protection estimates for the population at model initialization
+protection_at_model_init <- protection_at_model_initialization(clean_df[[1]]) 
+
+#Immunity offset - used for adjusting the initial number of infections at model start (first output from function)
+immunity_offset_mult <- protection_at_model_init[[1]]
+
+#Historical vaccine coverage by age and risk group. Calculated proportion of population who receive vaccine each week of simulation period 
+first_dose_coverage <- read.csv("data/clean-data/vax-uptake-scenarios/realistic-vaccine-coverage-by-age-and-risk.csv")[,-1] 
+second_dose_coverage <- read.csv("data/clean-data/vax-uptake-scenarios/realistic-2nd-dose-annually-vaccine-coverage-by-age-and-risk.csv")[,-1]
+next_year_dose_data <- read.csv("data/clean-data/vaccine-coverage-by-age-and-risk-forModelValidation.csv")[,-1]
+
+#Historical ("realistic") indicator (used for vaccine uptake assignment)
+realistic_ind <- 1
+
+#Severe incidence estimates by age (COVID-NET data, cleaned)
+#adj_inc is the average age-specific incidence, weighted by risk group
+weekly_severe_incidence <- read.csv("data/clean-data/weekly-incidence-estimates-US-validationPeriod-modelInput.csv")[,-1] %>%
+  mutate(age_group = case_when(age_group == "0-17 years (Children)" ~  "0-17 years", 
+                               age_group == "≥75 years" ~ "75+ years",
+                               TRUE ~ age_group)) 
+
+#Ratios between age-specific case hospitalization fractions
+# NOTE: 1. These are age-specific case hospitalization fractions from Herrera-Esposito D, et. al (BMC Infec Dis., 2022)
+#       2. This dataframe creates fixed ratios between the case-hospitalization fractions. The baseline group for setting the ratio is the 50-64 years.
+#       3. Since these case-hospitalization fractions are dated, we calibrate a parameter "baseline case-hospitalization fraction" to sets the relationship
+#          between severe and non-severe cases.
+#       4. Link: https://pmc.ncbi.nlm.nih.gov/articles/PMC8962942/
+age_ratio_case_hosp_frac <- data.frame(age_group = c("0-17 years", "18-29 years", "30-49 years", "50-64 years", "65-74 years", "75+ years"),
+                                       case_hosp_frac = c(0.155, 0.4283, 1.545, 5.9, 13, 30)) %>%
+  mutate(ratio = case_hosp_frac/5.9)
+
+#Generating nonsevere incidence estimates by age (assuming same age-specific nonsevere incidence across risk groups)
+#NOTE: Nonsevere incidence curves are generated by applying the age-specific case-hospitalization fractions 
+#      (fixed age-specific ratios * baseline case-hospitalization fraction) to the weekly severe incidence data from COVID-NET.
+#      The `baseline_case_hosp_frac` variable is a calibrated parameter from the MCMC
+# weekly_nonsevere_incidence <- merge(weekly_severe_incidence, 
+#                                     age_ratio_case_hosp_frac,
+#                                     by = "age_group", all.x = TRUE) %>%
+#   mutate(healthy_inc = adj_inc * (1/(ratio * baseline_case_hosp_frac)),
+#          immunocompromised_inc = adj_inc * (1/(ratio * baseline_case_hosp_frac)),
+#          higher_risk_inc = adj_inc * (1/(ratio * baseline_case_hosp_frac))) 
+
+weekly_nonsevere_incidence <- weekly_severe_incidence %>%
+  left_join(age_ratio_case_hosp_frac, by = "age_group") %>%
+  left_join(immunity_offset_mult, by = "age_group") %>%
+  mutate(healthy_inc = adj_inc * (1/(ratio * baseline_case_hosp_frac * immunity_offset_mult$immunity_offset)),
+         immunocompromised_inc = adj_inc * (1/(ratio * baseline_case_hosp_frac * immunity_offset_mult$immunity_offset)),
+         higher_risk_inc = adj_inc * (1/(ratio * baseline_case_hosp_frac * immunity_offset_mult$immunity_offset)))
+
+#Contact matrix (POLYMOD)
+#   NOTE: I believe it contains the mean number of contacts that each member of an age group (column) has reported with
+#   members of the same or another age group (row). Check with HJP
+contact_matrix <- read.csv("data/processed-data/contact matrix updated.csv") 
+
+
+
+#Calculating average severe incidence around model initialization (first 2 weeks of July 2023)
+#   Used to estimate total circulating infections to feed into the model
+average_severe_incidence <- weekly_severe_incidence %>%
+  pivot_longer(
+    cols = healthy_inc:higher_risk_inc,
+    names_to = "variable",
+    values_to = "severe_inc"
+  ) %>%
+  filter(weeks_since < 2) %>% 
+  group_by(age_group, variable) %>%
+  summarise(severe_inc = mean(severe_inc), .groups = "drop") %>%
+  # relabel risk groups
+  mutate(
+    risk_group = sub("_.*", "", variable), # take text before first "_"
+    risk_group = if_else(risk_group == "higher", "higher risk", risk_group)
+  ) %>%
+  dplyr::select(-variable)
+
+average_nonsevere_incidence <- weekly_nonsevere_incidence %>%
+  pivot_longer(
+    cols = healthy_inc:higher_risk_inc,
+    names_to = "variable",
+    values_to = "nonsevere_inc"
+  ) %>%
+  filter(weeks_since < 2) %>%
+  group_by(age_group, variable) %>%
+  summarise(nonsevere_inc = mean(nonsevere_inc), .groups = "drop") %>%
+  # relabel risk groups
+  mutate(
+    risk_group = sub("_.*", "", variable), # take text before first "_"
+    risk_group = if_else(risk_group == "higher", "higher risk", risk_group)
+  ) %>%
+  dplyr::select(-variable)
+
+#Average severe incidence by age group only
+average_severe_incidence_age_only <- weekly_severe_incidence %>%
+  pivot_longer(
+    cols = adj_inc,
+    names_to = "variable",
+    values_to = "severe_inc"
+  ) %>%
+  filter(weeks_since < 2) %>% 
+  group_by(age_group, variable) %>%
+  summarise(severe_inc = mean(severe_inc), .groups = "drop") %>%
+  dplyr::select(-variable)
+
+#Severe infection multipliers
+# NOTE: These severe infection multiplier are applied to the nonsevere-risk model equations to generate severe risk. These multiplier are just the ratio
+#       of severe to nonsevere incidence by age group at model initialization.
+severe_infection_multipliers <- merge(
+  average_severe_incidence, 
+  average_nonsevere_incidence, 
+  by = c("age_group", "risk_group"), 
+  all.x = TRUE
+) %>% 
+  mutate(
+    multiplier = severe_inc / nonsevere_inc
+  ) %>% 
+  mutate(
+    multiplier = if_else(age_group == "0-17 years", 0, multiplier)
+  ) %>%
+  setDT()
+
+# set the key for the data.table severe_infection_multipliers
+setkeyv(severe_infection_multipliers, c("age_group", "risk_group"))
+
+# #I_jt at model start: Estimate the total currently circulating infections @ t = 0 using the average severe incidences
+# inf_by_age <- clean_df[[1]] %>%
+#   group_by(age_group, risk_group) %>%
+#   summarise(total_pop = n()) %>%
+#   merge(
+#     average_severe_incidence,
+#     by = c("age_group", "risk_group"),
+#     all.x = TRUE
+#   ) %>%
+#   merge(
+#     average_nonsevere_incidence,
+#     by = c("age_group", "risk_group"),
+#     all.x = TRUE
+#   ) %>%
+#   # merge(
+#   #   immunity_offset_mult,
+#   #   by = "age_group",
+#   #   all.x = TRUE
+#   # ) %>%
+#   mutate(
+#     severe_inf = (total_pop * severe_inc / 100000) / 7,  # divide by 7 to convert weekly → daily
+#     inverse_severe_mult = nonsevere_inc / severe_inc,     # age-specific severe multiplier (weighted by risk group) to convert severe cases to total cases
+#     #severe_mult = severe_inc / nonsevere_inc     # age-specific severe multiplier (weighted by risk group) to convert severe cases to total cases
+#       ) %>%
+#   group_by(age_group) %>%
+#   summarise(
+#     weighted_severe_mult_inverse = weighted.mean(inverse_severe_mult, total_pop),
+#     #weighted_severe_mult = weighted.mean(severe_mult, total_pop),
+#     #weighted_severe_mult_inverse2 = 1/weighted_severe_mult,
+#     severe_inf = sum(severe_inf),
+#     total_pop = sum(total_pop)
+#     #immunity_offset = mean(immunity_offset)
+#   ) %>%
+#   mutate(
+#     # total_inf = non-severe cases + severe cases, assuming 5 day infectious period
+#     total_inf = ceiling(severe_inf * weighted_severe_mult_inverse * 5) + ceiling(severe_inf * 5)
+#   ) %>%
+#   select(age_group, total_pop, total_inf, severe_inf)
+
+# I_jt at model start: Estimate the total currently circulating infections @ t = 0 using the average severe incidences
+inf_by_age <- clean_df[[1]] %>%
+  group_by(age_group, risk_group) %>%
+  summarise(total_pop = n()) %>%
+  merge(
+    average_nonsevere_incidence,
+    by = c("age_group", "risk_group"),
+    all.x = TRUE
+  ) %>%
+  mutate(
+    nonsevere_inf = (total_pop * nonsevere_inc / 100000) / 7,  # convert inc (per 100,000) to infections and divide by 7 to convert weekly → daily
+  ) %>%
+  group_by(age_group) %>%
+  summarise(
+    nonsevere_inf = sum(nonsevere_inf),
+    total_pop = sum(total_pop),
+  ) %>%
+  mutate(
+    total_inf = ceiling(nonsevere_inf * 5)
+  ) %>%
+  dplyr::select(age_group, total_pop, total_inf)
+
+#inf_by_age$total_inf <- inf_by_age$total_inf*immunity_offset_mult$immunity_offset
+
+#Tracking the last 8 days of infection counts because 3 days (latent period) and 5 days (infectious period)
+infection_tracker_df <- data.frame(days_since = c(1:8),
+                                   age_0_17 = rep(inf_by_age$total_inf[1]/5, 8),
+                                   age_18_29 = rep(inf_by_age$total_inf[2]/5, 8),
+                                   age_30_49 = rep(inf_by_age$total_inf[3]/5, 8),
+                                   age_50_64 = rep(inf_by_age$total_inf[4]/5, 8),
+                                   age_65_74 = rep(inf_by_age$total_inf[5]/5, 8),
+                                   age_75_plus = rep(inf_by_age$total_inf[6]/5, 8))
+############################################################################################
+
+#Analytically solve beta for each age group (using severe risk model EQ)
+beta_analytic_calibration <- function() {
+  
+  
+  #Dynamic term (Age-specific only)
+  dynamic_term <- rep(c(sum((inf_by_age$total_inf/inf_by_age$total_pop) * contact_matrix$X0.17.years),
+                        sum((inf_by_age$total_inf/inf_by_age$total_pop) * contact_matrix$X18.29.years),
+                        sum((inf_by_age$total_inf/inf_by_age$total_pop) * contact_matrix$X30.49.years),
+                        sum((inf_by_age$total_inf/inf_by_age$total_pop) * contact_matrix$X50.64.years),
+                        sum((inf_by_age$total_inf/inf_by_age$total_pop) * contact_matrix$X65.74.years),
+                        sum((inf_by_age$total_inf/inf_by_age$total_pop) * contact_matrix$X75..years)))
+  
+  #Average severe risk and severe protection at model start, by age group
+  severe_risk_and_protection <- merge(immunity_offset_mult, average_severe_incidence_age_only, 
+                                      by = c("age_group"), all.x = TRUE) %>%
+    mutate(severe_risk = (severe_inc/100000)/7) #convert weekly severe incidence (per 100,000) into per-person daily risk
+  
+  #Pop-adjusted severe infection multipliers, by age group
+  severe_infection_multipliers_pop_adj <- (merge(severe_infection_multipliers %>% 
+                                                   dplyr::select(age_group, risk_group, multiplier),
+                                                 clean_df[[1]] %>% 
+                                                   group_by(age_group, risk_group) %>% 
+                                                   summarise(total_pop = n()),
+                                                 by = c("age_group", "risk_group")) %>%
+                                             group_by(age_group) %>%
+                                             summarise(pop_adj_mult = weighted.mean(multiplier, total_pop)))$pop_adj_mult
+  
+  #Betas vector (to populate)
+  beta_vector <- c()
+  
+  #Analytically solve for each beta
+  for(i in c(1:6)) {
+    beta_vector[i] <- severe_risk_and_protection$severe_risk[i] /
+      ((1 - severe_risk_and_protection$mean_severe_ve[i]) * dynamic_term[i] * severe_infection_multipliers_pop_adj[i])
+    
+    # Alternative formulation (commented out for now)
+    # beta_vector[i] <- severe_risk_and_protection$severe_risk[i] /
+    #   ((1 - severe_risk_and_protection$mean_severe_ve[i]) * dynamic_term[i] * age_ratio_case_hosp_frac$ratio[i] * baseline_case_hosp_frac)
+  }
+  
+  #Set 0-17 years beta to 18-29 years beta
+  beta_vector[1] <- beta_vector[2]
+  
+  #Add beta vector to dataframe 
+  severe_risk_and_protection$betas <- beta_vector
+  
+  return(severe_risk_and_protection %>% dplyr::select(age_group, betas))
+}
+
+beta <- setDT(beta_analytic_calibration())
+#beta$betas <- c(rep(1, 6))
+setkeyv(beta, c("age_group"))
+

@@ -1,0 +1,19 @@
+age_group,risk_group,prevalence
+0-17 years (Children),healthy,19.19
+0-17 years (Children),immunocompromised,0.56
+0-17 years (Children),higher risk,2
+18-29 years,healthy,11.4
+18-29 years,immunocompromised,0.52
+18-29 years,higher risk,3.78
+30-49 years,healthy,19.03
+30-49 years,immunocompromised,1.47
+30-49 years,higher risk,5.71
+50-64 years,healthy,6.83
+50-64 years,immunocompromised,1.66
+50-64 years,higher risk,10.18
+65-74 years,healthy,1.28
+65-74 years,immunocompromised,1.1
+65-74 years,higher risk,7.95
+≥75 years,healthy,0.91
+≥75 years,immunocompromised,0.78
+≥75 years,higher risk,5.65

@@ -1,0 +1,18 @@
+# How to run the main analysis
+
+This folder contains the scripts used to run the main analysis on Sherlock (computing cluster).  
+
+## R script description
+* `run-analysis.R`: Contains the code to run the entire main analysis. This script defines to run the simulation code for each specific job. Each job represents a single simulation run for a specific vaccination scenario (eligibility, coverage).
+* `sherlock_run_final_analysis.sh`: This is the bash script, or the "instructions" that Sherlock reads to set the specifications for running a job (e.g. memory, job time, number of jobs, etc.)
+* `simulation-functions-updated`: Contains the code for running the 18-month simulation. Note that there are different functions defined (e.g. `simulation_annual`, `simulation_semiannual_strat_5_7`, `simulation_semiannual_strat_8_9_10`) depending on which vaccination scenario is being run, so make sure to double check that the jobs in `run-analysis.R` are correctly specified. I have different functions due to how we count outcomes in the vaccinated groups under different strategies. 
+* `simulation-inputs-historical`: Contains code for defining the inputs needed for the simulation. This includes reading in the vaccine coverage (realistic) data, cleaning the initialized population, and analytically calculating the betas (updated to remove immunity offset and solve using severe EQ)
+* `simulation-inputs-optimistic`: Contains code for defining the inputs needed for the simulation. This includes reading in the vaccine coverage (optimistic) data, cleaning the initialized population, and analytically calculating the betas (updated to remove immunity offset and solve using severe EQ)
+* `vaccine-uptake-assignment-scenarios.R`: Contains code for vaccination assignment under each vaccination scenario.
+
+## How to run
+1. Set the model parameters in `run-analysis.R` script. Use the parameters estimated from the model calibration to set the parameters at the top of the script. If this is your nth time running the main analysis results, you might also want to update the file paths of where the results are stored, for example, renaming `simulation-results` as `simulation-results-[date]` or `simulation-results-[n]`.
+2. Specify what jobs you want to run in the `run-analysis.R` script. This includes which scenarios to run (default is running all 12 vaccination scenarios, including the no additional vaccination and the historical vaccination scenarios), which coverage scenario to run (default is running both realistic and optimistic), and how many of each scenario to run (default is 10 times). You can change these specifications by adapting the `if` statements to your needs. One note is that any analyses that are higher priority I would give them a smaller job number assignment. This is because Sherlock generally batches jobs in the order of their job number. So for example, this might come up if you need specific scenarios for the main manuscript (e.g. #1, #2, #4, #5, #6, #9) and the other scenarios are for the appendix. Or if you want to see how all the scenarios compare, so run each scenario 1 time first, then run additional times for stochasticity purposes. Or how it is now which is running realistic coverage simulations first, then optimistic coverage simulations.
+3. After making any changes to the `run-analysis.R` script, make sure to update the `sherlock_run_final_analysis.sh` script with the correct number of jobs in the job array specification. Make sure to also update the email and SUNet ID.
+4. Copy over all these scripts to your Sherlock account.
+5. Run the `sherlock_run_final_analysis.sh` script in Sherlock.
